@@ -9142,3 +9142,236 @@ running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 [0m
+[0m$ [0mgit status --short; git add -A; git status --short | head -80; git diff --cached --stat | tail -30
+?? .agent-work/
+?? .github/workflows/ci.yml
+?? .gitignore
+?? Cargo.lock
+?? Cargo.toml
+?? LICENSE
+?? README.md
+?? RELEASE_NOTES.md
+?? docs/
+?? src/
+?? tests/
+A  .agent-work/logs/build.log
+A  .agent-work/logs/convert-full-build.log
+A  .agent-work/logs/convert-test.log
+A  .agent-work/logs/install-test.log
+A  .agent-work/logs/launch-help.log
+A  .agent-work/logs/launcher-native-build.log
+A  .agent-work/logs/opencode-output.log
+A  .agent-work/logs/stage.log
+A  .github/workflows/ci.yml
+A  .gitignore
+A  Cargo.lock
+A  Cargo.toml
+A  LICENSE
+A  README.md
+A  RELEASE_NOTES.md
+A  docs/FORMAT.md
+A  docs/VALIDATION.md
+A  src/convert.rs
+A  src/format.rs
+A  src/hnmod.rs
+A  src/lib.rs
+A  src/main.rs
+A  src/store.rs
+A  tests/cli.rs
+A  tests/fixtures/example_mod-0.1.0.hnmod
+ .agent-work/logs/build.log                 |   26 +
+ .agent-work/logs/convert-full-build.log    |  284 +
+ .agent-work/logs/convert-test.log          |   21 +
+ .agent-work/logs/install-test.log          |    7 +
+ .agent-work/logs/launch-help.log           |   30 +
+ .agent-work/logs/launcher-native-build.log |    1 +
+ .agent-work/logs/opencode-output.log       | 9144 ++++++++++++++++++++++++++++
+ .agent-work/logs/stage.log                 |    7 +
+ .github/workflows/ci.yml                   |   30 +
+ .gitignore                                 |    7 +
+ Cargo.lock                                 |  602 ++
+ Cargo.toml                                 |   35 +
+ LICENSE                                    |   21 +
+ README.md                                  |  326 +
+ RELEASE_NOTES.md                           |   38 +
+ docs/FORMAT.md                             |  109 +
+ docs/VALIDATION.md                         |  147 +
+ src/convert.rs                             |  469 ++
+ src/format.rs                              |  415 ++
+ src/hnmod.rs                               |  178 +
+ src/lib.rs                                 |   17 +
+ src/main.rs                                |  377 ++
+ src/store.rs                               |  398 ++
+ tests/cli.rs                               |  199 +
+ tests/fixtures/example_mod-0.1.0.hnmod     |  Bin 0 -> 1465 bytes
+ 25 files changed, 12888 insertions(+)
+[0m
+[0m$ [0mdu -h .agent-work/logs/*; wc -l .agent-work/logs/*; git commit -m "Add hmloader: precompiled .hmmod format, converter and tests" 2>&1 | tail -10
+4.0K	.agent-work/logs/build.log
+12K	.agent-work/logs/convert-full-build.log
+4.0K	.agent-work/logs/convert-test.log
+4.0K	.agent-work/logs/install-test.log
+4.0K	.agent-work/logs/launch-help.log
+4.0K	.agent-work/logs/launcher-native-build.log
+432K	.agent-work/logs/opencode-output.log
+4.0K	.agent-work/logs/stage.log
+    26 .agent-work/logs/build.log
+   284 .agent-work/logs/convert-full-build.log
+    21 .agent-work/logs/convert-test.log
+     7 .agent-work/logs/install-test.log
+    30 .agent-work/logs/launch-help.log
+     1 .agent-work/logs/launcher-native-build.log
+  9208 .agent-work/logs/opencode-output.log
+     7 .agent-work/logs/stage.log
+  9584 total
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <runner@runnervmccnms.sn3pxxgnt4xebf1dqesogdgc5b.gx.internal.cloudapp.net>) not allowed
+[0m
+[0m$ [0mgit log -1 --format='%an <%ae>'; git config user.name "OpenCode Agent"; git config user.email "opencode-agent@users.noreply.github.com"; git commit -m "Add hmloader: precompiled .hmmod format, converter and tests" 2>&1 | tail -10; git log --oneline -3
+MIKAILAMIN <mikailamin.freefire@gmail.com>
+ create mode 100644 docs/FORMAT.md
+ create mode 100644 docs/VALIDATION.md
+ create mode 100644 src/convert.rs
+ create mode 100644 src/format.rs
+ create mode 100644 src/hnmod.rs
+ create mode 100644 src/lib.rs
+ create mode 100644 src/main.rs
+ create mode 100644 src/store.rs
+ create mode 100644 tests/cli.rs
+ create mode 100644 tests/fixtures/example_mod-0.1.0.hnmod
+ac04ec7 Add hmloader: precompiled .hmmod format, converter and tests
+4b45200 Add OpenCode workflow for issue handling
+[0m
+[0m$ [0mgit push origin main 2>&1 | tail -20
+To https://github.com/promikailamin/horizon_modloader
+   4b45200..ac04ec7  main -> main
+[0m
+[0m$ [0mcargo build --release -q; rm -rf .agent-work/tmp/final-home; export HORIZON_HMMOD_HOME="$PWD/.agent-work/tmp/final-home"; ./target/release/hmloader install .agent-work/outputs/example_mod-0.1.0-built.hmmod > .agent-work/logs/final-install.log 2>&1 && ./target/release/hmloader verify example_mod >> .agent-work/logs/final-install.log 2>&1 && ./target/release/hmloader launch example_mod -- --help > .agent-work/logs/final-launch.log 2>&1; echo launch_exit=$?; cat .agent-work/logs/final-install.log; head -8 .agent-work/logs/final-launch.log; ./target/release/hmloader doctor | head -30
+launch_exit=0
+Installed example_mod 0.1.0 (example_mod) -> /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/final-home/mods/example_mod-0.1.0.hmmod
+Build d61e35288622 (1 mods)
+Verified 3 files in /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/final-home/store/example_mod-0.1.0-d61e35288622-a628e32cc462
+Start it with: hmloader launch example_mod
+OK: example_mod 0.1.0 (3 files, target x86_64-unknown-linux-gnu, Horizon ba6344a59cb9e755b730dcf02285fc0d33b97d3c)
+Launching example_mod 0.1.0 (example_mod d61e35288622)
+  client:   /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/final-home/store/example_mod-0.1.0-d61e35288622-a628e32cc462/game/horizon-client
+  instance: /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/final-home/instances/example_mod
+Horizon — Minecraft Java Edition 26.3 in Rust
+
+  --resources PATH        Prepared resources (horizon-prepare)
+  --render-distance N     Chunks, 2..128 (default 12)
+  --world NAME            World folder under saves/ (default "New World")
+hmloader 0.1.0
+home:    /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/final-home
+mods:    /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/final-home/mods
+target:  x86_64-unknown-linux-gnu
+rust:    rustc 1.99.1 (58cf8f9c3 2026-10-13)
+cargo:   cargo 1.99.1 (5f94df478 2026-08-27)
+git:     git version 2.56.1
+tar:     tar (GNU tar) 1.35
+installed: 1 mod(s)
+  example_mod 0.1.0 -> /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/final-home/mods/example_mod-0.1.0.hmmod (client present)
+HORIZON_HMMOD_HOME=/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/final-home
+[0m
+[0m$ [0mpython3 - <<'PY'
+p='src/main.rs'; s=open(p).read()
+s=s.replace('''    if let Some(r) = std::env::var_os("HORIZON_HMMOD_HOME") {
+        println!("HORIZON_HMMOD_HOME={}", r.to_string_lossy());
+    }
+    let _ = sha256_file(Path::new("."));
+    Ok(())''','''    if let Some(r) = std::env::var_os("HORIZON_HMMOD_HOME") {
+        println!("HORIZON_HMMOD_HOME={}", r.to_string_lossy());
+    }
+    Ok(())''')
+s=s.replace('use hmloader::format::{current_target, sha256_file};','use hmloader::format::current_target;')
+open(p,'w').write(s)
+PY
+cargo fmt --all && cargo clippy --all-targets -- -D warnings 2>&1 | tail -5 && cargo test -q 2>&1 | tail -10 && cargo build --release -q && echo OK
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `hmloader` (bin "hmloader") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `hmloader` (bin "hmloader" test) due to 1 previous error
+error[E0425]: cannot find function `sha256_file` in this scope
+   --> src/main.rs:373:13
+    |
+373 |     let _ = sha256_file(p);
+    |             ^^^^^^^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `hmloader` (bin "hmloader" test) due to 1 previous error
+error: could not compile `hmloader` (bin "hmloader") due to 1 previous error
+error[E0425]: cannot find function `sha256_file` in this scope
+   --> src/main.rs:373:13
+    |
+373 |     let _ = sha256_file(p);
+    |             ^^^^^^^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `hmloader` (bin "hmloader") due to 1 previous error
+[0m
+[0m$ [0mpython3 - <<'PY'
+p='src/main.rs'; s=open(p).read()
+start=s.find('#[allow(dead_code)]\nfn _typecheck')
+if start!=-1:
+    s=s[:start].rstrip()+'\n'
+s=s.replace('use hmloader::hnmod::HnmodBundle;\n','')
+open(p,'w').write(s)
+PY
+cargo fmt --all && cargo clippy --all-targets -- -D warnings 2>&1 | tail -8 && cargo test -q 2>&1 | tail -10 && cargo build --release -q && echo OK
+Checking hmloader v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
+Verified 3 files in /tmp/.tmpso9Tso/home/store/demo-0.1.0-68b3bcb4cbce-73103454ed2f
+Start it with: hmloader launch demo
+.
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+OK
+[0m
+[0m$ [0mcp target/release/hmloader .agent-work/outputs/hmloader-x86_64-unknown-linux-gnu; cp .agent-work/outputs/example_mod-0.1.0-built.hmmod .agent-work/outputs/example_mod-0.1.0.hmmod 2>/dev/null || true; cd .agent-work/outputs && sha256sum hmloader-x86_64-unknown-linux-gnu example_mod-0.1.0.hmmod > SHA256SUMS && cat SHA256SUMS && ls -lh
+c6c466fb2a4db699688b59b339d022fd53f01a2b7d8753a80092dd293a4d8bfd  hmloader-x86_64-unknown-linux-gnu
+a628e32cc4623b9e7afce722b4b2bf686e69c47da57d77574ea54ad114fdd7c9  example_mod-0.1.0.hmmod
+total 49M
+-rw-r--r-- 1 runner runner  190 Nov 15 15:46 SHA256SUMS
+-rw-r--r-- 1 runner runner  24M Nov 15 15:41 example_mod-0.1.0-built.hmmod
+-rw-r--r-- 1 runner runner  24M Nov 15 15:46 example_mod-0.1.0.hmmod
+-rwxr-xr-x 1 runner runner 1.5M Nov 15 15:46 hmloader-x86_64-unknown-linux-gnu
+[0m
+[0m$ [0mgh release create hmloader-v0.1.0 .agent-work/outputs/hmloader-x86_64-unknown-linux-gnu .agent-work/outputs/example_mod-0.1.0.hmmod .agent-work/outputs/SHA256SUMS --repo promikailamin/horizon_modloader --title "hmloader 0.1.0 — precompiled .hmmod mods for Horizon" --notes-file RELEASE_NOTES.md 2>&1 | tail -20
+https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0
+[0m
+[0m$ [0mgh release view hmloader-v0.1.0 --repo promikailamin/horizon_modloader --json url,assets --jq '.url, (.assets[] | [.name,.size] | @tsv)'
+https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0
+example_mod-0.1.0.hmmod	24612628
+hmloader-x86_64-unknown-linux-gnu	1473184
+SHA256SUMS	190
+[0m
+[0m$ [0mcd .agent-work/tmp && rm -f hmloader-dl example-dl.hmmod && curl -sL -o hmloader-dl https://github.com/promikailamin/horizon_modloader/releases/download/hmloader-v0.1.0/hmloader-x86_64-unknown-linux-gnu && curl -sL -o example-dl.hmmod https://github.com/promikailamin/horizon_modloader/releases/download/hmloader-v0.1.0/example_mod-0.1.0.hmmod && chmod +x hmloader-dl && sha256sum hmloader-dl example-dl.hmmod && ./hmloader-dl --version && ./hmloader-dl info example-dl.hmmod | head -12
+c6c466fb2a4db699688b59b339d022fd53f01a2b7d8753a80092dd293a4d8bfd  hmloader-dl
+a628e32cc4623b9e7afce722b4b2bf686e69c47da57d77574ea54ad114fdd7c9  example-dl.hmmod
+hmloader 0.1.0
+{
+  "format": 1,
+  "kind": "prebuilt-game",
+  "id": "example_mod",
+  "name": "example_mod",
+  "version": "0.1.0",
+  "horizon_revision": "ba6344a59cb9e755b730dcf02285fc0d33b97d3c",
+  "horizon_version": "26.3",
+  "target": "x86_64-unknown-linux-gnu",
+  "profile": "fast",
+  "build_id": "d61e35288622cf8e5a7077c005a91412acb4acb83fa5a54cac40c3a9b6589e1c",
+  "executable": "game/horizon-client",
+[0m

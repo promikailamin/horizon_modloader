@@ -9,6 +9,9 @@ This repository is the mod loader, its converter and the `.hmmod` format specifi
 upstream Horizon project is forked at
 [promikailamin/horizon](https://github.com/promikailamin/horizon).
 
+**Download:** [hmloader 0.1.0 release](https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0)
+(`hmloader-x86_64-unknown-linux-gnu`, the test `example_mod-0.1.0.hmmod`, and `SHA256SUMS`).
+
 > This project is not affiliated with Mojang, Microsoft or the Horizon Team. Horizon, Minecraft
 > and their assets keep their own licences. Prepared Minecraft resources are private and are never
 > included in an `.hmmod`.

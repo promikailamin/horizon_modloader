@@ -1,8 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use hmloader::convert::{self, ConvertOptions};
-use hmloader::format::{current_target, sha256_file};
-use hmloader::hnmod::HnmodBundle;
+use hmloader::format::current_target;
 use hmloader::store::LoaderHome;
 use std::path::{Path, PathBuf};
 
@@ -347,7 +346,6 @@ fn doctor(store: &LoaderHome, launcher: Option<&Path>) -> Result<()> {
     if let Some(r) = std::env::var_os("HORIZON_HMMOD_HOME") {
         println!("HORIZON_HMMOD_HOME={}", r.to_string_lossy());
     }
-    let _ = sha256_file(Path::new("."));
     Ok(())
 }
 
@@ -365,13 +363,4 @@ fn option_version(cmd: &str) -> String {
                 .to_string()
         })
         .unwrap_or_else(|| "not found".to_string())
-}
-
-#[allow(dead_code)]
-fn _typecheck(p: &Path) -> Result<()> {
-    let b = HnmodBundle::open(p)?;
-    let _ = b.manifest;
-    let _ = sha256_file(p);
-    let _: Option<&str> = None;
-    Ok(())
 }

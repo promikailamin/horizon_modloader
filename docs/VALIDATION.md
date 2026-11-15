@@ -145,3 +145,23 @@ Logs are preserved under `.agent-work/logs/`:
 | `convert-full-build.log` | `hmloader convert` full compile |
 | `install-test.log` | install/list/verify |
 | `launch-help.log` | launching the precompiled client |
+
+
+## Published release
+
+Release: <https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0>
+
+| Asset | SHA-256 |
+|---|---|
+| `hmloader-x86_64-unknown-linux-gnu` | `c6c466fb2a4db699688b59b339d022fd53f01a2b7d8753a80092dd293a4d8bfd` |
+| `example_mod-0.1.0.hmmod` | `a628e32cc4623b9e7afce722b4b2bf686e69c47da57d77574ea54ad114fdd7c9` |
+
+Both assets were downloaded again from the release and their hashes matched `SHA256SUMS`:
+
+```
+$ ./hmloader-dl --version
+hmloader 0.1.0
+$ ./hmloader-dl info example-dl.hmmod
+"id": "example_mod",
+"build_id": "d61e35288622cf8e5a7077c005a91412acb4acb83fa5a54cac40c3a9b6589e1c",
+```
