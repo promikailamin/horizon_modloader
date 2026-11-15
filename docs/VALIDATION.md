@@ -147,6 +147,26 @@ Logs are preserved under `.agent-work/logs/`:
 | `launch-help.log` | launching the precompiled client |
 
 
+## Official launcher import
+
+The precompiled client was also handed to the official launcher's own import path:
+
+```
+$ hmloader import-launcher example_mod \
+    --launcher horizon-launcher \
+    --version nightly-2026-11-13-9f42064
+Imported imported-2026-11-15-1efd64d and selected it. Prepare it next: horizon-launcher prepare --version imported-2026-11-15-1efd64d
+
+$ horizon-launcher versions --installed
+  nightly-2026-11-13-9f42064  not prepared
+* imported-2026-11-15-1efd64d  not prepared
+```
+
+The imported version's `horizon-client` is 64 MiB and contains the compiled
+`[example_mod] Breaking block at` string. It is "not prepared" only because this runner cannot
+prepare Minecraft 26.3 resources (the account/asset boundary above); importing and selecting the
+build itself succeeded.
+
 ## Published release
 
 Release: <https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0>

@@ -9375,3 +9375,84 @@ hmloader 0.1.0
   "build_id": "d61e35288622cf8e5a7077c005a91412acb4acb83fa5a54cac40c3a9b6589e1c",
   "executable": "game/horizon-client",
 [0m
+[0m$ [0mpython3 - <<'PY'
+p='README.md'; s=open(p).read()
+needle='''This repository is the mod loader, its converter and the `.hmmod` format specification. The
+upstream Horizon project is forked at
+[promikailamin/horizon](https://github.com/promikailamin/horizon).
+'''
+rep='''This repository is the mod loader, its converter and the `.hmmod` format specification. The
+upstream Horizon project is forked at
+[promikailamin/horizon](https://github.com/promikailamin/horizon).
+
+**Download:** [hmloader 0.1.0 release](https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0)
+(`hmloader-x86_64-unknown-linux-gnu`, the test `example_mod-0.1.0.hmmod`, and `SHA256SUMS`).
+'''
+assert needle in s
+s=s.replace(needle,rep)
+open(p,'w').write(s)
+
+p='docs/VALIDATION.md'; s=open(p).read()
+s += '''
+
+## Published release
+
+Release: <https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0>
+
+| Asset | SHA-256 |
+|---|---|
+| `hmloader-x86_64-unknown-linux-gnu` | `c6c466fb2a4db699688b59b339d022fd53f01a2b7d8753a80092dd293a4d8bfd` |
+| `example_mod-0.1.0.hmmod` | `a628e32cc4623b9e7afce722b4b2bf686e69c47da57d77574ea54ad114fdd7c9` |
+
+Both assets were downloaded again from the release and their hashes matched `SHA256SUMS`:
+
+```
+$ ./hmloader-dl --version
+hmloader 0.1.0
+$ ./hmloader-dl info example-dl.hmmod
+"id": "example_mod",
+"build_id": "d61e35288622cf8e5a7077c005a91412acb4acb83fa5a54cac40c3a9b6589e1c",
+```
+'''
+open(p,'w').write(s)
+PY
+git add -A; git status --short | head -30; git commit -m "Document release assets and final validation" 2>&1 | tail -5; git push origin main 2>&1 | tail -5
+A  .agent-work/logs/final-install.log
+A  .agent-work/logs/final-launch.log
+M  .agent-work/logs/opencode-output.log
+A  .agent-work/outputs/SHA256SUMS
+A  .agent-work/outputs/hmloader-x86_64-unknown-linux-gnu
+M  README.md
+M  docs/VALIDATION.md
+M  src/main.rs
+ 8 files changed, 294 insertions(+), 12 deletions(-)
+ create mode 100644 .agent-work/logs/final-install.log
+ create mode 100644 .agent-work/logs/final-launch.log
+ create mode 100644 .agent-work/outputs/SHA256SUMS
+ create mode 100755 .agent-work/outputs/hmloader-x86_64-unknown-linux-gnu
+To https://github.com/promikailamin/horizon_modloader
+   ac04ec7..571a072  main -> main
+[0m
+[0m$ [0mexport HORIZON_LAUNCHER_HOME="$PWD/.agent-work/tmp/hztest/launcher" HORIZON_HOME="$PWD/.agent-work/tmp/hztest/game" XDG_DATA_HOME="$PWD/.agent-work/tmp/hztest/data" XDG_CONFIG_HOME="$PWD/.agent-work/tmp/hztest/config" HORIZON_LAUNCHER_NO_SELF_UPDATE=1 HORIZON_HMMOD_HOME="$PWD/.agent-work/tmp/final-home"; ./target/release/hmloader import-launcher example_mod --launcher "$PWD/.agent-work/tools/launcher/horizon-launcher" --version nightly-2026-11-13-9f42064 2>&1 | tee .agent-work/logs/import-launcher.log | tail -30; echo ---; .agent-work/tools/launcher/horizon-launcher versions --installed 2>&1 | tail -20; find .agent-work/tmp/hztest/launcher/versions -maxdepth 1 -type d -printf '%f\n'
+Imported imported-2026-11-15-1efd64d and selected it. Prepare it next: horizon-launcher prepare --version imported-2026-11-15-1efd64d
+---
+  nightly-2026-11-13-9f42064  not prepared
+* imported-2026-11-15-1efd64d  not prepared
+versions
+imported-2026-11-15-1efd64d
+.importing
+nightly-2026-11-13-9f42064
+[0m
+[0m$ [0mgrep -a -o '\[example_mod\] Breaking block at' .agent-work/tmp/hztest/launcher/versions/imported-2026-11-15-1efd64d/horizon-client | head -1; ls -lh .agent-work/tmp/hztest/launcher/versions/imported-2026-11-15-1efd64d/horizon-client; find .agent-work/tmp/hztest/launcher/versions/imported-2026-11-15-1efd64d -maxdepth 1 -type f -printf '%f\n'
+[example_mod] Breaking block at
+-rwxr-xr-x 1 runner runner 64M Nov 15 15:47 .agent-work/tmp/hztest/launcher/versions/imported-2026-11-15-1efd64d/horizon-client
+horizon-ctl
+horizon-prepare
+imported.json
+.installed
+research-lock.json
+LICENSE
+horizon-client
+horizon-server
+PLAY.txt
+[0m

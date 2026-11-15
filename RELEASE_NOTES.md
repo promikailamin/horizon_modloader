@@ -11,7 +11,8 @@ First release of the precompiled `.hmmod` mod loader for Horizon.
 - `.hnmod` -> `.hmmod` converter that stages the pinned Horizon source with `horizon-mixins`,
   compiles `horizon-client` once on the author machine and packages the result.
 - Combining several `.hnmod` files into one prebuilt `.hmmod`.
-- Optional import of a prebuilt client into the official Horizon launcher.
+- Optional import of a prebuilt client into the official Horizon launcher (tested with launcher
+  0.2.67: the build was imported and selected as its own version).
 - Path-traversal, symlink, duplicate and checksum validation; no scripts run during install.
 - Tests for packaging, installation, tampering detection, traversal rejection, `.hnmod` reading,
   launch and the CLI.
