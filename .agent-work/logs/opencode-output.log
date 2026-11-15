@@ -9570,3 +9570,17 @@ total 49M
 -rwxr-xr-x 1 runner runner 1.5M Nov 15 15:46 hmloader-x86_64-unknown-linux-gnu
 31
 [0m
+[0m$ [0mgit add -A && git commit -m "Final execution log" 2>&1 | tail -3 && git push origin main 2>&1 | tail -3 && git status --short
+[main d90fbad] Final execution log
+ 1 file changed, 64 insertions(+)
+To https://github.com/promikailamin/horizon_modloader
+   5f825a0..d90fbad  main -> main
+[0m
+Implemented and released `hmloader` with the new precompiled `.hmmod` format.
+
+- Release: https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0
+- Fork: https://github.com/promikailamin/horizon
+- Full source, converter, tests, README, format spec and validation report are on `main` (latest commit `d90fbad`).
+- Verified: full `.hnmod` → `.hmmod` compile, install, checksum verification, launch of the prebuilt modded Horizon client, deterministic packaging, and import into the official launcher `0.2.67`.
+- 5/5 tests pass; `fmt` and `clippy -D warnings` pass.
+- Interactive gameplay could not be run because CI has no licensed Minecraft 26.3 resources/account. Also documented: Horizon has no runtime plugin ABI, so an `.hmmod` carries a prebuilt client and multiple mods must be converted together.
