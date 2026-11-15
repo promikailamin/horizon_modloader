@@ -311,11 +311,47 @@ Not tested here: interactive gameplay, because this CI environment has no Micros
 owns Minecraft and no legally prepared Minecraft 26.3 resources. That is an asset/account boundary,
 not a code path; the client starts and parses its command line from the prebuilt package.
 
+## `.hnmod` vs `.hmmod`: is anything lost?
+
+Short answer: for an ordinary mixin-only native mod, **the mod does not lose capabilities**. Both
+formats end with the same `horizon-mixins apply` source transformation followed by a
+`cargo build -p horizon-client`. `hmloader` does not sandbox, rewrite or interpret the mixin code;
+it packages the client that build produced. There is no class of source-mixin mod that works as an
+`.hnmod` but cannot be expressed as an `.hmmod`.
+
+The differences are about builds and distribution:
+
+| Topic | `.hnmod` (upstream) | `.hmmod` (this loader) |
+|---|---|---|
+| Who compiles | Every player, 30-40 min | The author, once |
+| Mixin mechanism | `horizon-mixins` source mixins | Same mixin mechanism and build step |
+| Platforms | Each player builds for their own machine | The author must publish one package **per target** (Linux/macOS/Windows, x86-64/arm64); `hmloader` refuses a mismatched target |
+| Combining mods | Install several `.hnmod` files and rebuild together | Convert them together into one `.hmmod`; separate `.hmmod` files with different builds cannot be launched together |
+| Horizon upgrade | Rebuild against the new revision | The author must reconvert; a package pins one Horizon commit |
+| Build profile | Player can choose | Fixed by the author (`fast` or `release`) |
+| Download size | Small source bundle | Whole prebuilt client (tens of MiB), once per target/combination |
+| Trust | Built locally from source | Unsigned author-built binary; the original `.hnmod` is included under `source/` for inspection |
+| Native build extras | Handled by the Horizon native-build pipeline | Not validated here: bundles with extra `[[crate]]` packages or `[[post_build]]` steps may need that same pipeline |
+| Minecraft resources | Prepared separately | Same; assets are never packaged |
+
+So an `.hmmod` cannot be a single universal file for every OS/CPU, cannot be combined at runtime
+with an independently built package, and may not reproduce bundles that depend on Horizon's extra
+native build steps. Those are constraints of shipping a prebuilt game, not restrictions on the mod
+code itself. A runtime plugin ABI would remove most of them, but upstream has no such ABI today.
+
+Two converter details worth knowing:
+
+- Only `mixins/<id>/` is taken from an `.hnmod`; the rest of the bundle (for example
+  `horizon-native.json`) is used as metadata and carried along as provenance, not executed.
+- The `--mixins` checkout is used as given. The converter does not currently verify that it matches
+  the `horizon-mixins` revision recorded in the bundle, so check it out at that revision yourself.
+
 ## Limitations and future work
 
 - A stable runtime ABI for Horizon hooks would allow many small `.hmmod` files instead of one
-  prebuilt game per combination. Upstream has no such ABI today; this loader deliberately uses the
-  supported source-mixin build and packages its output.
+  prebuilt game per combination, and would remove the per-platform/per-combination build matrix.
+  Upstream has no such ABI today; this loader deliberately uses the supported source-mixin build and
+  packages its output.
 - The source converter supports ordinary mixin bundles. Bundles using extra `[[crate]]` packages or
   `[[post_build]]` steps may need the official launcher's full native-build pipeline; those are
   candidates for a `--launcher` backend.
