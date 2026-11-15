@@ -1,0 +1,7 @@
+/target
+/.agent-work/tmp/
+/.agent-work/tools/launcher/
+/.agent-work/tools/*.tar.gz
+/.hmloader-work/
+*.hmmod-store/
+.agent-work/outputs/*.hmmod

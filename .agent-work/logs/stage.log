@@ -1,0 +1,7 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s
+{
+  "stage": "/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hztest/template/target/mixins/modded",
+  "stage_changed": true,
+  "horizon_revision": "ba6344a59cb9e755b730dcf02285fc0d33b97d3c",
+  "staging_seconds": 37.217525721000015
+}

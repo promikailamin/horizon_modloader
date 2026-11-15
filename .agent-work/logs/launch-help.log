@@ -1,0 +1,30 @@
+Launching example_mod 0.1.0 (example_mod d61e35288622)
+  client:   /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hmloader-home/store/example_mod-0.1.0-d61e35288622-a628e32cc462/game/horizon-client
+  instance: /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hmloader-home/instances/example_mod
+Horizon — Minecraft Java Edition 26.3 in Rust
+
+  --resources PATH        Prepared resources (horizon-prepare)
+  --render-distance N     Chunks, 2..128 (default 12)
+  --world NAME            World folder under saves/ (default "New World")
+  --seed N                World seed for new worlds (default 0)
+  --width N, --height N   Window size (default 1280 x 720)
+  --creative              Creative mode (default survival)
+  --test-terrain          Simple test terrain instead of vanilla generation
+  --frames N              Exit after N frames (testing)
+  --world-frames N        Exit after N frames drawn in the world (testing)
+  --smoke-report PATH     Write a JSON report on exit
+  --benchmark SCENARIO    Run a benchmark (standard, village, forest, ocean, mountain), write its report to benchmarks/ and quit
+  --control               Accept horizon-ctl commands on a local socket
+  --control-socket PATH   Control socket path (default $XDG_RUNTIME_DIR/horizon-control.sock)
+  --server HOST[:PORT]    Join a multiplayer server (offline mode) at start
+  --quickPlaySingleplayer WORLD  Open this world of saves/ at start, only if it exists (vanilla's)
+  --quickPlayMultiplayer HOST[:PORT]  The same as --server (vanilla's name)
+  --name NAME             Player name for multiplayer (default: generated once, kept in horizon-player.txt)
+  --session-file PATH     Signed-in account from the launcher (read once, then deleted)
+  --dev-mod PATH          A content mod (.hmod or folder) to develop: always on
+  --in-frame              DEPRECATED, do not use: unsupported, will be removed soon (also --no-server-thread)
+  --pregen                Add Horizon's /pregen command (docs/pregeneration.md)
+
+Controls: mouse look, WASD move, Space jump, Left Shift sneak, Left Ctrl sprint,
+left click break, right click place/use, 1-9/scroll hotbar, E inventory,
+Q drop, F3 debug, Esc pause.

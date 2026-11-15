@@ -1,0 +1,21 @@
+==> exporting Horizon ba6344a59cb9e755b730dcf02285fc0d33b97d3c from .agent-work/tmp/hztest/horizon
+==> git archive
+==> tar extract
+==> applying mixins into .agent-work/tmp/hmloader-work/d61e35288622cf8e/stage
+==> horizon-mixins apply
+{
+  "bridges": 0,
+  "crates": 0,
+  "data": 0,
+  "injections": 1,
+  "modules": 1,
+  "post_build": 0,
+  "seconds": 19.717548913999998,
+  "stage": "/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hmloader-work/d61e35288622cf8e/stage",
+  "stage_changed": true,
+  "states": 0,
+  "status": "ok",
+  "transformation_seconds": 19.717530026
+}
+==> packing .agent-work/outputs/example_mod-0.1.0.hmmod
+==> wrote .agent-work/outputs/example_mod-0.1.0.hmmod (24612628 bytes, build d61e35288622, executable 66254752 bytes)

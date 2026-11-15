@@ -1,0 +1,7 @@
+Installed example_mod 0.1.0 (example_mod) -> /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hmloader-home/mods/example_mod-0.1.0.hmmod
+Build d61e35288622 (1 mods)
+Verified 3 files in /home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hmloader-home/store/example_mod-0.1.0-d61e35288622-a628e32cc462
+Start it with: hmloader launch example_mod
+ID                   VERSION      BUILD                        HORIZON              MODS
+example_mod          0.1.0        d61e35288622                 ba6344a59cb9         example_mod 0.1.0
+OK: example_mod 0.1.0 (3 files, target x86_64-unknown-linux-gnu, Horizon ba6344a59cb9e755b730dcf02285fc0d33b97d3c)

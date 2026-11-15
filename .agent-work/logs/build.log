@@ -1,0 +1,26 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s
+{
+  "stage": "/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hztest/template/target/mixins/modded",
+  "stage_changed": false,
+  "horizon_revision": "ba6344a59cb9e755b730dcf02285fc0d33b97d3c",
+  "staging_seconds": 37.307093321000025,
+  "cargo_seconds": 351.237552674,
+  "cargo_command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "-p",
+    "horizon-client",
+    "--bin",
+    "horizon-client",
+    "--no-default-features",
+    "--target-dir",
+    "/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hztest/template/target/horizon-cargo",
+    "--profile",
+    "fast"
+  ],
+  "cargo_exit": 0,
+  "cargo_log": "/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hztest/template/target/horizon-build.log",
+  "binary": "/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/tmp/hztest/template/target/horizon-cargo/fast/horizon-client"
+}
