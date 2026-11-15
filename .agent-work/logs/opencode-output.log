@@ -9506,3 +9506,67 @@ example_mod-0.1.0.hmmod	24612628
 hmloader-x86_64-unknown-linux-gnu	1473184
 SHA256SUMS	190
 [0m
+[0m$ [0mgit add -A && git commit -m "Update execution log" 2>&1 | tail -3 && git push origin main 2>&1 | tail -3; git status --short; git log --oneline -3
+[main 5f825a0] Update execution log
+ 1 file changed, 50 insertions(+)
+To https://github.com/promikailamin/horizon_modloader
+   982b5f3..5f825a0  main -> main
+5f825a0 Update execution log
+982b5f3 Validate import into the official Horizon launcher
+571a072 Document release assets and final validation
+[0m
+[0m$ [0mgh issue comment "1" --repo "promikailamin/horizon_modloader" --body "$(cat <<'EOF'
+## Implemented: `hmloader` + `.hmmod` precompiled mod format
+
+Forked upstream to https://github.com/promikailamin/horizon and added the mod loader in this repository.
+
+### What was built
+
+- **`.hmmod` format 1**: deterministic ZIP with `hmmod.json`, per-file SHA-256, Horizon revision/target/profile pins, the prebuilt `horizon-client`, and the original `.hnmod` source under `source/` for transparency.
+- **`hmloader` CLI**: `info`, `install`, `list`, `remove`, `verify`, `launch`, `convert`, `pack`, `import-launcher`, `doctor`.
+- **Converter**: stages the pinned Horizon source with `horizon-mixins`, applies one or more `.hnmod` bundles, compiles `horizon-client` once on the author machine, and packages it. Players install/launch without Rust or Cargo.
+- **Safety checks**: path traversal, symlinks, duplicate files, unknown files and checksum mismatches are rejected. Only the declared client gets `0755`.
+- **Official launcher integration**: `import-launcher` imports the prebuilt client as its own launcher version via the official `import-build` path.
+- **Docs**: full beginner-to-advanced README, format spec and validation report.
+
+### Tests actually run
+
+- Downloaded official Horizon launcher `0.2.67`; installed `nightly-2026-11-13-9f42064`; verified its native-build correctly refuses because resources are unprepared.
+- Converted the included test `.hnmod` (`example_mod-0.1.0.hnmod`, Horizon `ba6344a…`, horizon-mixins `d9c83d7…`) **end-to-end with a full compile** (~5m42s), no prebuilt-binary shortcut.
+- Installed, listed, verified and launched the resulting `.hmmod`; the prebuilt modded client printed its Horizon 26.3 `--help`.
+- Confirmed the mod is inside the binary: `[example_mod] Breaking block at`.
+- Confirmed deterministic output: two conversions produced the same SHA-256.
+- Imported the build into the official launcher (`imported-2026-11-15-1efd64d`) and confirmed it was selected.
+- `cargo fmt`, `cargo clippy -D warnings`, and 5/5 tests pass.
+
+### Release
+
+https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0
+
+- `hmloader-x86_64-unknown-linux-gnu` — SHA-256 `c6c466fb2a4db699688b59b339d022fd53f01a2b7d8753a80092dd293a4d8bfd`
+- `example_mod-0.1.0.hmmod` — SHA-256 `a628e32cc4623b9e7afce722b4b2bf686e69c47da57d77574ea54ad114fdd7c9`
+- `SHA256SUMS`
+
+Both release assets were downloaded again and hashes matched.
+
+### Important limitation / remaining problem
+
+Horizon native mods are compile-time source mixins, not runtime plugins. There is no stable hook ABI for arbitrary `.so`/`.dll` mods, so an `.hmmod` carries a complete prebuilt client. Multiple mods must be converted **together** into one `.hmmod` (the converter supports this). A true small-plugin loader would require an upstream Horizon runtime-hook ABI.
+
+Interactive gameplay was not run in CI: the runner has no Microsoft account that owns Minecraft and no legally prepared Minecraft 26.3 resources. Install, verification, launch and client startup were verified; world rendering needs those private resources.
+
+Commits: `ac04ec7`, `571a072`, `982b5f3`, `5f825a0` on `main`. Full logs in `.agent-work/logs/` and `.agent-work/outputs/SHA256SUMS`.
+EOF
+)" 2>&1 | tail -5
+https://github.com/promikailamin/horizon_modloader/issues/1#issuecomment-6897109703
+[0m
+[0m$ [0mgit status --short; git log --oneline -1; ls -lh .agent-work/outputs | head; git ls-files | wc -l
+M .agent-work/logs/opencode-output.log
+5f825a0 Update execution log
+total 49M
+-rw-r--r-- 1 runner runner  190 Nov 15 15:46 SHA256SUMS
+-rw-r--r-- 1 runner runner  24M Nov 15 15:41 example_mod-0.1.0-built.hmmod
+-rw-r--r-- 1 runner runner  24M Nov 15 15:46 example_mod-0.1.0.hmmod
+-rwxr-xr-x 1 runner runner 1.5M Nov 15 15:46 hmloader-x86_64-unknown-linux-gnu
+31
+[0m
