@@ -395,3 +395,67 @@ Checking itoa v1.0.19
     Checking hmloader v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.13s
 [0m
+[0m$ [0mgit add README.md .agent-work/logs/opencode-output.log && git commit -m "Document hnmod vs hmmod capability differences
+
+Adds a dedicated section answering whether converting an .hnmod to an
+.hmmod loses mod capabilities. Explains that mixin mods behave the same,
+and documents the real packaging limits (per-target builds, one build per
+mod combination, author-fixed profile, trust model, native build extras,
+and the unverified horizon-mixins revision pin).
+
+Closes #2" && git push origin main
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <runner@runnervmccnms.fdsfy2mcuqquvoa25vvoluli1c.yx.internal.cloudapp.net>) not allowed
+[0m
+[0m$ [0mgit log -1 --format='%an <%ae>' && git config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com" && git commit -m "Document hnmod vs hmmod capability differences
+
+Adds a dedicated section answering whether converting an .hnmod to an
+.hmmod loses mod capabilities. Explains that mixin mods behave the same,
+and documents the real packaging limits (per-target builds, one build per
+mod combination, author-fixed profile, trust model, native build extras,
+and the unverified horizon-mixins revision pin).
+
+Closes #2" && git push origin main
+github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+[main 9c292fc] Document hnmod vs hmmod capability differences
+ 2 files changed, 369 insertions(+), 9522 deletions(-)
+To https://github.com/promikailamin/horizon_modloader
+   70646da..9c292fc  main -> main
+[0m
+[0m$ [0mgh issue comment 2 --repo promikailamin/horizon_modloader --body "Answered and documented in commit \`9c292fc\` (README section: **\`.hnmod\` vs \`.hmmod\`: is anything lost?**).
+
+**Short answer:** For an ordinary mixin-only native mod, no — converting an \`.hnmod\` to an \`.hmmod\` does not remove mod capabilities. Both formats go through the same \`horizon-mixins apply\` source transformation and \`cargo build -p horizon-client\`; \`hmloader\` just packages the resulting client. There is no class of source-mixin mod that works as an \`.hnmod\` but cannot be expressed as an \`.hmmod\`.
+
+**What is actually different (packaging, not mod power):**
+- **Per-platform builds:** the author must publish one \`.hmmod\` per target (Linux/macOS/Windows, x86-64/arm64). \`hmloader\` refuses a target mismatch. An \`.hnmod\` is built locally by each player.
+- **One build per combination:** separate \`.hmmod\` files built independently cannot be launched together; convert the mods together (like a modpack). This is the same rebuild-per-combination cost the \`.hnmod\` path already has.
+- **Horizon pin:** a package pins one Horizon commit; after an upstream update the author must reconvert.
+- **Profile:** the author fixes \`fast\`/\`release\`; the player cannot choose.
+- **Size:** an \`.hmmod\` carries the whole prebuilt client (tens of MiB), not a small source bundle.
+- **Trust:** the binary is author-built and unsigned (the original \`.hnmod\` is included under \`source/\` for inspection). A locally compiled \`.hnmod\` is built from source.
+- **Native build extras:** extra \`[[crate]]\` packages or \`[[post_build]]\` steps are not validated by this converter and may need the official launcher's native-build pipeline.
+- **Resources:** Minecraft assets are never packaged in either format; they must be prepared separately.
+- **Mixins revision:** the converter currently uses the \`--mixins\` checkout you pass as-is and does not verify it matches the revision recorded in the bundle. Check it out at the pinned revision.
+
+So there is no "more powerful \`.hnmod\` mod" that the loader fundamentally cannot support, except bundles relying on Horizon's extra native build steps. Runtime hot-loading of independently built plugins would require a stable hook ABI, which upstream Horizon does not have today.
+
+**Validation:** \`cargo fmt --all --check\`, \`cargo clippy --all-targets -- -D warnings\`, and \`cargo test\` (5 passed) all succeeded. Change pushed to \`main\`."
+accepts 1 arg(s), received 4
+[0m
+[0m← [0mWrite .agent-work/tmp/issue-2-comment.md
+Wrote file successfully.
+[0m
+[0m$ [0mgh issue comment 2 --repo promikailamin/horizon_modloader --body-file .agent-work/tmp/issue-2-comment.md
+https://github.com/promikailamin/horizon_modloader/issues/2#issuecomment-6903305781
+[0m
