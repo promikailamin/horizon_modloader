@@ -9456,3 +9456,53 @@ horizon-client
 horizon-server
 PLAY.txt
 [0m
+[0m$ [0mpython3 - <<'PY'
+p='docs/VALIDATION.md'; s=open(p).read()
+needle='''## Published release'''
+add='''## Official launcher import
+
+The precompiled client was also handed to the official launcher's own import path:
+
+```
+$ hmloader import-launcher example_mod \\
+    --launcher horizon-launcher \\
+    --version nightly-2026-11-13-9f42064
+Imported imported-2026-11-15-1efd64d and selected it. Prepare it next: horizon-launcher prepare --version imported-2026-11-15-1efd64d
+
+$ horizon-launcher versions --installed
+  nightly-2026-11-13-9f42064  not prepared
+* imported-2026-11-15-1efd64d  not prepared
+```
+
+The imported version's `horizon-client` is 64 MiB and contains the compiled
+`[example_mod] Breaking block at` string. It is "not prepared" only because this runner cannot
+prepare Minecraft 26.3 resources (the account/asset boundary above); importing and selecting the
+build itself succeeded.
+
+## Published release'''
+assert needle in s
+s=s.replace(needle,add,1)
+open(p,'w').write(s)
+p='RELEASE_NOTES.md'; s=open(p).read()
+s=s.replace('- Optional import of a prebuilt client into the official Horizon launcher.','- Optional import of a prebuilt client into the official Horizon launcher (tested with launcher\n  0.2.67: the build was imported and selected as its own version).')
+open(p,'w').write(s)
+PY
+git add -A; git commit -m "Validate import into the official Horizon launcher" 2>&1 | tail -5; git push origin main 2>&1 | tail -5
+[main 982b5f3] Validate import into the official Horizon launcher
+ 4 files changed, 104 insertions(+), 1 deletion(-)
+ create mode 100644 .agent-work/logs/import-launcher.log
+To https://github.com/promikailamin/horizon_modloader
+   571a072..982b5f3  main -> main
+[0m
+[0m$ [0mgh release edit hmloader-v0.1.0 --repo promikailamin/horizon_modloader --notes-file RELEASE_NOTES.md 2>&1 | tail -5; git status --short; git log --oneline -5; gh release view hmloader-v0.1.0 --repo promikailamin/horizon_modloader --json url,assets --jq '.url, (.assets[] | [.name,.size] | @tsv)'
+https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0
+ M .agent-work/logs/opencode-output.log
+982b5f3 Validate import into the official Horizon launcher
+571a072 Document release assets and final validation
+ac04ec7 Add hmloader: precompiled .hmmod format, converter and tests
+4b45200 Add OpenCode workflow for issue handling
+https://github.com/promikailamin/horizon_modloader/releases/tag/hmloader-v0.1.0
+example_mod-0.1.0.hmmod	24612628
+hmloader-x86_64-unknown-linux-gnu	1473184
+SHA256SUMS	190
+[0m
