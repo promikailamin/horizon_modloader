@@ -459,3 +459,19 @@ Wrote file successfully.
 [0m$ [0mgh issue comment 2 --repo promikailamin/horizon_modloader --body-file .agent-work/tmp/issue-2-comment.md
 https://github.com/promikailamin/horizon_modloader/issues/2#issuecomment-6903305781
 [0m
+[0m$ [0mgit status --short && git add -A && git commit -m "Preserve issue #2 reply draft" && git push origin main && git status
+M .agent-work/logs/opencode-output.log
+[main b14c17d] Preserve issue #2 reply draft
+ 1 file changed, 64 insertions(+)
+To https://github.com/promikailamin/horizon_modloader
+   9c292fc..b14c17d  main -> main
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+[0m
+Documented the answer and replied on the issue.
+
+- Added README section `.hnmod` vs `.hmmod`: is anything lost?, covering mixin parity and real packaging limits (per-target builds, one build per mod combination, pinned Horizon revision, fixed profile, trust model, native-build extras, unverified mixins pin).
+- Verified with `cargo fmt --all --check`, `cargo clippy --all-targets -- -D warnings`, and `cargo test` (5 passed).
+- Pushed commits `9c292fc` and `b14c17d` to `main`; commented on issue #2: https://github.com/promikailamin/horizon_modloader/issues/2#issuecomment-6903305781
