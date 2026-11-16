@@ -995,3 +995,51 @@ M .agent-work/logs/opencode-output.log
  README.md                            |   42 +
  2 files changed, 535 insertions(+), 5629 deletions(-)
 [0m
+[0m$ [0mgit add -A && git commit -m "Document whether C++ would allow mod-only builds
+
+Answers issue #4: the language is not what forces a full client rebuild.
+Source mixins require recompiling the game in Rust or C++ alike; standalone
+mod builds need a stable upstream runtime plugin/hook ABI, which Horizon does
+not expose today. The .hmmod container is language-agnostic." && git push origin main
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <runner@runnervmccnms.ft3aihkd2upeldoaxjnmlf5u2h.jx.internal.cloudapp.net>) not allowed
+[0m
+[0m$ [0mgit config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com" && git commit -m "Document whether C++ would allow mod-only builds
+
+Answers issue #4: the language is not what forces a full client rebuild.
+Source mixins require recompiling the game in Rust or C++ alike; standalone
+mod builds need a stable upstream runtime plugin/hook ABI, which Horizon does
+not expose today. The .hmmod container is language-agnostic." && git push origin main
+[main 8bcd92b] Document whether C++ would allow mod-only builds
+ 3 files changed, 565 insertions(+), 5627 deletions(-)
+ create mode 100644 .agent-work/logs/issue-4-reply.md
+To https://github.com/promikailamin/horizon_modloader
+   8f3153b..8bcd92b  main -> main
+[0m
+[0m$ [0mgh issue comment "4" --repo "promikailamin/horizon_modloader" --body "Thanks for the question. Short answer: **the language is not what forces a full game rebuild — the modding model is.**
+
+Horizon native mods are **compile-time source mixins**: they patch the game's own source and are then compiled into \`horizon-client\`. There is no standalone mod artifact to build, so every mod change means rebuilding the client. That would be exactly the same if Horizon were written in C++ with source-level patches.
+
+Building *only* the mod requires a **stable runtime plugin/hook boundary** — a plugin SDK, a C ABI, or a loader that loads \`.so\`/\`.dll\` mods at launch instead of linking them in. A C++ game can provide that, but so can Rust: a Rust \`cdylib\` exporting \`extern \"C\"\` functions is a normal C-ABI plugin. Horizon upstream simply does not expose such an ABI today.
+
+C++ is not automatically easier here either: its ABI is unstable across compilers, compiler versions and STL layouts, so C++ plugins still need a stable C ABI or a pinned toolchain — the same constraint Rust binary plugins have. And \`.hmmod\` itself is language-agnostic: it packages a prebuilt executable plus SHA-256 manifest hashes, so a C++ client would fit the same format unchanged.
+
+**So:** to build mods independently you need an upstream runtime hook/plugin ABI, not a change of implementation language. Until Horizon has one, \`hmloader\` uses the supported mixin build and ships the resulting client as an \`.hmmod\`.
+
+I documented this in README.md under \"Would C++ instead of Rust let a mod build alone?\" (commit \`8bcd92b\`, pushed to \`main\`). Docs-only change; no tests were needed."
+https://github.com/promikailamin/horizon_modloader/issues/4#issuecomment-6904358127
+[0m
+Done. Answered issue #4 and documented it in `README.md` under "Would C++ instead of Rust let a mod build alone?".
+
+Core point: language isn't the deciding factor — compile-time source mixins force a full rebuild in Rust or C++, while mod-only builds need an upstream runtime plugin/hook ABI, which Horizon lacks today. Committed `8bcd92b`, pushed to `main`, and commented on the issue.
