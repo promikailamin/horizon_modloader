@@ -6113,3 +6113,12 @@ M .agent-work/logs/opencode-output.log
 7b7a78d chore: recover OpenCode workspace [skip ci]
 b14c17d Preserve issue #2 reply draft
 [0m
+[0m$ [0mgit add -A && git commit -m "Update OpenCode execution log [skip ci]" && git push origin main && git status --short
+[main a7f7d61] Update OpenCode execution log [skip ci]
+ 1 file changed, 138 insertions(+)
+To https://github.com/promikailamin/horizon_modloader
+   05dede8..a7f7d61  main -> main
+[0m
+Added `.github/workflows/build.yml` to compile one or more `.hnmod` files into a single `.hmmod` via workflow dispatch, plus `scripts/resolve_build_inputs.py`, docs, and a relative `--target-dir` converter fix. Committed and pushed to `main` (`05dede8`, `a7f7d61`); issue #3 was answered with usage and timing details.
+
+Validated with `cargo fmt`, `cargo clippy`, `cargo test --all-targets` (8 passed), `actionlint`, and a full local workflow reproduction including install/verify/launch of the produced package.
