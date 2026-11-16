@@ -5426,3 +5426,17 @@ a725c50 chore: recover OpenCode workspace [skip ci]
 origin	https://github.com/promikailamin/horizon_modloader (fetch)
 origin	https://github.com/promikailamin/horizon_modloader (push)
 [0m
+[0m$ [0mgit add .agent-work/logs/opencode-output.log && git commit -m "Update OpenCode execution log [skip ci]" && git push origin main && git status --short
+[main 0c0f16c] Update OpenCode execution log [skip ci]
+ 1 file changed, 29 insertions(+)
+To https://github.com/promikailamin/horizon_modloader
+   da30c56..0c0f16c  main -> main
+[0m
+Implemented and pushed to `main` (commits `466b983`, `da30c56`, `0c0f16c`).
+
+- Added `hmloader runtime [dir]`, `install-dir`, and `combine` for drop-in mod folders and combining separately built `.hmmod` files from their embedded `.hnmod` sources.
+- Added portable loader packaging plus the **Build runtime loader** workflow for Linux, Windows, and macOS.
+- Added `docs/RUNTIME_LOADER.md`, README/release notes, safety checks, and 15 tests.
+- `cargo fmt`, `cargo clippy -D warnings`, `cargo test`, and `actionlint` passed.
+
+True Fabric-style runtime plugin loading remains impossible without an upstream Horizon plugin ABI, since `.hmmod` contains a whole compiled client. The issue was updated: https://github.com/promikailamin/horizon_modloader/issues/7#issuecomment-6905912477
