@@ -814,3 +814,10 @@ M .agent-work/logs/opencode-output.log
 e311e09 Document how Fabric/Forge differ from Horizon's native mod model
 ## main...origin/main
 [0m
+[0m$ [0mgit add .agent-work/logs/opencode-output.log && git commit -m "Update execution log for issue #5 [skip ci]" && git push
+[main 8cc0db0] Update execution log for issue #5 [skip ci]
+ 1 file changed, 66 insertions(+)
+To https://github.com/promikailamin/horizon_modloader
+   e311e09..8cc0db0  main -> main
+[0m
+Done. Answered issue #5 by adding a README section explaining Fabric/Forge's JVM runtime-loading model versus Horizon's native AOT source-mixin model, plus a reply draft. Commits `e311e09` and `8cc0db0` pushed to `main`; issue comment posted: https://github.com/promikailamin/horizon_modloader/issues/5#issuecomment-6904834571
