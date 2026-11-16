@@ -1,3 +1,19 @@
+# Unreleased
+
+## Added
+
+- Drop-in runtime mode: `hmloader runtime [dir]` installs every `.hmmod` in a folder and starts a
+  build containing all installed mods. It refuses to fake a merge of separately built clients and
+  prints the exact combination command instead.
+- `hmloader install-dir [dir]` imports a whole folder of `.hmmod` files.
+- `hmloader combine <dir>` extracts the original `.hnmod` sources stored in `.hmmod` packages and
+  rebuilds them together into one prebuilt `modpack_<hash>.hmmod`.
+- Optional `--id`, `--name` and `--version` overrides for `convert` and `combine`.
+- Portable loader bundle script (`scripts/package_runtime_loader.sh`) and the **Build runtime
+  loader** workflow for Linux x86-64, Windows x86-64 and macOS arm64.
+- New [runtime loader documentation](docs/RUNTIME_LOADER.md) and tests for build grouping, folder
+  installation, source extraction and complete-build selection.
+
 # hmloader 0.1.0
 
 First release of the precompiled `.hmmod` mod loader for Horizon.

@@ -157,6 +157,58 @@ Anything after `--` goes to Horizon:
 ./hmloader launch example_mod -- --width 1600 --height 900 --creative
 ```
 
+### Drop-in loader: all `.hmmod` files in one folder
+
+The runtime mode is for the "download a loader, drop all my mods in a folder, press play" workflow.
+Make a loader folder with the `hmloader` binary and a `mods/` directory:
+
+```
+loader/
+  hmloader
+  mods/
+    mod-a.hmmod
+    mod-b.hmmod
+```
+
+Then run:
+
+```sh
+./hmloader runtime mods --dry-run   # show what would start
+./hmloader runtime mods             # install the folder and launch
+```
+
+`runtime` installs every `.hmmod` in the folder, groups packages by their `build_id`, and launches a
+build whose `mods` list contains every installed mod. This is the maximum a native loader can do
+without an upstream Horizon plugin ABI:
+
+- If the packages were built **together**, one package (or one shared build) already contains all
+  mods and starts normally.
+- If they were built **separately**, no process can combine the compiled clients. `runtime` stops
+  with the exact `combine` command instead of silently starting only one mod.
+
+To combine separately built packages, keep the original sources that every `.hmmod` carries under
+`source/` and run the author-side build once:
+
+```sh
+./hmloader combine mods \
+  --out modpack.hmmod \
+  --source ./horizon \
+  --mixins ./horizon-mixins
+./hmloader remove mod-a
+./hmloader remove mod-b
+./hmloader install modpack.hmmod
+./hmloader launch modpack
+```
+
+`combine` is a build step, not runtime plugin loading. The result is one prebuilt client, exactly
+like converting the `.hnmod` files together. See [docs/RUNTIME_LOADER.md](docs/RUNTIME_LOADER.md)
+for the complete explanation and a portable loader bundle.
+
+This does **not** turn `.hmmod` into a Fabric-style plugin. Fabric loads small jars at runtime
+because the JVM has a class loader and transformable bytecode; Horizon native mods are source mixins
+compiled into the client. A loader binary can automate install/verify/launch and build a combined
+modpack, but it cannot splice two independently compiled native clients into one process.
+
 ### Resources
 
 Horizon needs Minecraft 26.3 resources. `hmloader launch` uses, in order:
@@ -291,6 +343,9 @@ hmloader list                      list installed mods and build ids
 hmloader verify <id>               re-check every hash and the client
 hmloader remove <id>               remove an installed mod and its files
 hmloader launch [id] [OPTIONS]     run the prebuilt client
+hmloader install-dir [dir]         install every .hmmod in a folder
+hmloader runtime [dir] [OPTIONS]   drop-in mode: install a folder and start a complete build
+hmloader combine <dir> ...         merge the .hnmod sources inside .hmmod files into one build
 hmloader convert <hnmod...> ...    build one or more .hnmod files into an .hmmod
 hmloader pack ...                  package an existing client (advanced)
 hmloader import-launcher <id> ...  import a build into the official launcher

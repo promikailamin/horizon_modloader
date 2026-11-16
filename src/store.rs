@@ -111,7 +111,19 @@ impl LoaderHome {
         let dest_archive = self
             .mods_dir()
             .join(format!("{}-{}.hmmod", manifest.id, manifest.version));
-        if !dest_archive.exists() || sha256_file(&dest_archive)? != archive_sha {
+        if dest_archive.exists() {
+            let existing = sha256_file(&dest_archive)?;
+            if existing != archive_sha {
+                anyhow::bail!(
+                    "another .hmmod for {} {} is already installed at {} with a different build; \
+                     remove it first with `hmloader remove {}`",
+                    manifest.id,
+                    manifest.version,
+                    dest_archive.display(),
+                    manifest.id
+                );
+            }
+        } else {
             let tmp = dest_archive.with_extension("hmmod.tmp");
             fs::copy(archive, &tmp)?;
             fs::rename(&tmp, &dest_archive)?;

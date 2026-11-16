@@ -29,6 +29,13 @@ pub struct ConvertOptions {
     /// Skip the compile and use this already-built client (for tests or when
     /// re-packaging an existing build).
     pub prebuilt_binary: Option<PathBuf>,
+    /// Override the package id (useful when combining several mods into a
+    /// modpack with its own identity).
+    pub id: Option<String>,
+    /// Override the display name.
+    pub name: Option<String>,
+    /// Override the package version.
+    pub version: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -358,6 +365,15 @@ pub fn convert(opts: &ConvertOptions) -> Result<PathBuf> {
     }
 
     let mut manifest = bundles[0].manifest_base(&opts.profile, &target, &build_id);
+    if let Some(id) = &opts.id {
+        manifest.id = id.clone();
+    }
+    if let Some(name) = &opts.name {
+        manifest.name = name.clone();
+    }
+    if let Some(version) = &opts.version {
+        manifest.version = version.clone();
+    }
     manifest.horizon_version = Some(native_mods.base.clone());
     manifest.mods = bundles.iter().map(|b| b.mod_entry()).collect();
     manifest.source_sha256 = Some(source_sha);

@@ -11,6 +11,7 @@
 pub mod convert;
 pub mod format;
 pub mod hnmod;
+pub mod runtime;
 pub mod store;
 
 pub use format::{HmmodManifest, ManifestError};

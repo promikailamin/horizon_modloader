@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use hmloader::convert::{self, ConvertOptions};
 use hmloader::format::current_target;
+use hmloader::runtime::{self, CombineOptions};
 use hmloader::store::LoaderHome;
 use std::path::{Path, PathBuf};
 
@@ -53,6 +54,70 @@ enum Commands {
         #[arg(last = true)]
         args: Vec<String>,
     },
+    /// Install every .hmmod directly inside a folder.
+    InstallDir {
+        /// Folder containing .hmmod files. Defaults to the loader's mods folder.
+        dir: Option<PathBuf>,
+    },
+    /// Drop-in runtime loader: install a mod folder, then start a build that
+    /// contains every installed mod.
+    Runtime {
+        /// Folder containing .hmmod files. Defaults to the loader's mods folder.
+        dir: Option<PathBuf>,
+        /// Prepared Horizon resources (the folder holding horizon-resources.json).
+        #[arg(long)]
+        resources: Option<PathBuf>,
+        /// Print the command instead of starting the game.
+        #[arg(long)]
+        dry_run: bool,
+        /// Arguments passed to horizon-client.
+        #[arg(last = true)]
+        args: Vec<String>,
+    },
+    /// Combine a folder of .hmmod files into one package using the original
+    /// .hnmod sources they carry. Needs a Rust build environment.
+    Combine {
+        /// Folder containing .hmmod files.
+        dir: PathBuf,
+        #[arg(long)]
+        out: PathBuf,
+        /// Horizon source checkout (git repository) containing the pinned commit.
+        #[arg(long)]
+        source: PathBuf,
+        /// horizon-mixins checkout (git repository).
+        #[arg(long)]
+        mixins: PathBuf,
+        /// Cargo profile: fast (Horizon's performance profile) or release.
+        #[arg(long, default_value = "fast")]
+        profile: String,
+        /// Reuse a Cargo target directory (falls back to the staged workspace).
+        #[arg(long)]
+        target_dir: Option<PathBuf>,
+        /// Where temporary sources and the staged workspace live.
+        #[arg(long)]
+        work_dir: Option<PathBuf>,
+        /// Do not let Cargo access the network; dependencies must be cached.
+        #[arg(long)]
+        offline: bool,
+        /// Path to an already-built horizon-mixins binary.
+        #[arg(long)]
+        mixins_cli: Option<PathBuf>,
+        /// Human-readable base version to record in the manifest.
+        #[arg(long)]
+        horizon_version: Option<String>,
+        /// Build bundles that pin different Horizon revisions anyway.
+        #[arg(long)]
+        allow_mismatch: bool,
+        /// Package id for the combined build (default: modpack_<source hash>).
+        #[arg(long)]
+        id: Option<String>,
+        /// Display name for the combined build.
+        #[arg(long)]
+        name: Option<String>,
+        /// Package version for the combined build.
+        #[arg(long)]
+        version: Option<String>,
+    },
     /// Convert one or more .hnmod bundles into one precompiled .hmmod.
     Convert {
         /// .hnmod files. Several are compiled together into one game, like a modpack.
@@ -89,6 +154,15 @@ enum Commands {
         /// Skip compilation and package this client binary instead.
         #[arg(long)]
         prebuilt_binary: Option<PathBuf>,
+        /// Override the package id (default: the first bundle's id).
+        #[arg(long)]
+        id: Option<String>,
+        /// Override the package display name.
+        #[arg(long)]
+        name: Option<String>,
+        /// Override the package version.
+        #[arg(long)]
+        version: Option<String>,
     },
     /// Package an already-built horizon-client as an .hmmod (advanced/testing).
     Pack {
@@ -229,6 +303,62 @@ fn run() -> Result<()> {
         } => {
             store.launch(id.as_deref(), resources.as_deref(), &args, dry_run)?;
         }
+        Commands::InstallDir { dir } => {
+            let dir = dir.unwrap_or_else(|| store.mods_dir());
+            let installed = runtime::install_directory(&store, &dir)?;
+            for item in installed {
+                println!(
+                    "Installed {} {} ({}) -> {}",
+                    item.manifest.name,
+                    item.manifest.version,
+                    item.manifest.id,
+                    item.archive.display()
+                );
+            }
+        }
+        Commands::Runtime {
+            dir,
+            resources,
+            dry_run,
+            args,
+        } => {
+            let dir = dir.unwrap_or_else(|| store.mods_dir());
+            runtime::load_directory(&store, Some(&dir), resources.as_deref(), &args, dry_run)?;
+        }
+        Commands::Combine {
+            dir,
+            out,
+            source,
+            mixins,
+            profile,
+            target_dir,
+            work_dir,
+            offline,
+            mixins_cli,
+            horizon_version,
+            allow_mismatch,
+            id,
+            name,
+            version,
+        } => {
+            let work_dir = work_dir.unwrap_or_else(|| store.work_dir());
+            runtime::combine(&CombineOptions {
+                dir,
+                out,
+                source,
+                mixins,
+                profile,
+                target_dir,
+                work_dir,
+                offline,
+                mixins_cli,
+                horizon_version,
+                allow_mismatch,
+                id,
+                name,
+                version,
+            })?;
+        }
         Commands::Convert {
             bundles,
             out,
@@ -242,6 +372,9 @@ fn run() -> Result<()> {
             horizon_version,
             allow_mismatch,
             prebuilt_binary,
+            id,
+            name,
+            version,
         } => {
             let work_dir = work_dir.unwrap_or_else(|| store.work_dir());
             let opts = ConvertOptions {
@@ -257,6 +390,9 @@ fn run() -> Result<()> {
                 horizon_version,
                 allow_mismatch,
                 prebuilt_binary,
+                id,
+                name,
+                version,
             };
             convert::convert(&opts)?;
         }

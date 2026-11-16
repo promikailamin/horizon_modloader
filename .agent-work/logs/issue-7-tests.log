@@ -1,0 +1,46 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running unittests src/lib.rs (target/debug/deps/hmloader-721184170f2a9294)
+
+running 7 tests
+test convert::tests::no_target_dir_stays_none ... ok
+test convert::tests::absolute_target_dir_is_kept_as_is ... ok
+test convert::tests::relative_target_dir_is_resolved_from_the_caller_working_directory ... ok
+test runtime::tests::empty_mods_list_falls_back_to_package_id ... ok
+test runtime::tests::one_build_with_all_mods_is_selected ... ok
+test runtime::tests::separate_builds_are_not_silently_merged ... ok
+test runtime::tests::packages_with_the_same_build_share_one_group ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/hmloader-7c420095588de6d9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cli.rs (target/debug/deps/cli-1d07a0d21f0e65e1)
+
+running 5 tests
+test reads_the_test_hnmod_fixture ... ok
+test rejects_path_traversal_in_archive ... ok
+test detects_tampering_after_install ... ok
+wrote /tmp/.tmpOZUrYf/demo.hmmod
+FAKE-HORIZON --frames 1
+test packs_installs_verifies_and_launches ... ok
+Installed Demo 0.1.0 (demo) -> /tmp/.tmpOZUrYf/home/mods/demo-0.1.0.hmmod
+Build 68b3bcb4cbce (1 mods)
+Verified 3 files in /tmp/.tmpOZUrYf/home/store/demo-0.1.0-68b3bcb4cbce-73103454ed2f
+Start it with: hmloader launch demo
+test cli_pack_install_list_and_dry_run ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/runtime.rs (target/debug/deps/runtime-780ef33cc789312e)
+
+running 3 tests
+test source_bundles_are_extracted_from_packages ... ok
+test install_dir_imports_every_package ... ok
+test runtime_rejects_separate_builds_but_launches_a_complete_one ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

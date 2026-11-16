@@ -1,0 +1,90 @@
+name: Build runtime loader
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: >-
+          Optional release tag. When set, the loader bundles are uploaded to that
+          GitHub release (created if missing).
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-runtime-loader-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Package loader (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            target: aarch64-apple-darwin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build hmloader
+        run: cargo build --release --locked
+
+      - name: Assemble loader bundle
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          bin="target/release/hmloader"
+          if [ -f "$bin.exe" ]; then
+            bin="$bin.exe"
+          fi
+          ./scripts/package_runtime_loader.sh "$bin" "$TARGET" "loader-$TARGET"
+          tar -czf "loader-$TARGET.tar.gz" -C "loader-$TARGET" .
+          sha256sum "loader-$TARGET.tar.gz" > "loader-$TARGET.tar.gz.sha256" 2>/dev/null \
+            || shasum -a 256 "loader-$TARGET.tar.gz" > "loader-$TARGET.tar.gz.sha256"
+
+      - name: Upload loader artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-loader-${{ matrix.target }}
+          path: |
+            loader-${{ matrix.target }}.tar.gz
+            loader-${{ matrix.target }}.tar.gz.sha256
+          if-no-files-found: error
+
+      - name: Upload to GitHub release
+        if: inputs.release_tag != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          files=("loader-$TARGET.tar.gz" "loader-$TARGET.tar.gz.sha256")
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${files[@]}" --clobber
+          else
+            gh release create "$TAG" "${files[@]}" \
+              --target "$GITHUB_SHA" \
+              --title "$TAG" \
+              --notes "Runtime loader bundles built by workflow run $GITHUB_RUN_ID."
+          fi
