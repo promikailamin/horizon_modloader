@@ -1,0 +1,243 @@
+name: Build .hmmod
+
+on:
+  workflow_dispatch:
+    inputs:
+      mods:
+        description: >-
+          .hnmod files to compile together, separated by spaces, commas or
+          newlines. Use repository paths or public URLs.
+        required: true
+        default: tests/fixtures/example_mod-0.1.0.hnmod
+        type: string
+      out:
+        description: Output .hmmod file name
+        required: true
+        default: example_mod-0.1.0.hmmod
+        type: string
+      profile:
+        description: Cargo profile for the prebuilt Horizon client
+        required: true
+        default: fast
+        type: choice
+        options:
+          - fast
+          - release
+      horizon_repo:
+        description: Horizon git repository
+        required: true
+        default: https://github.com/horizon-rust/horizon
+        type: string
+      mixins_repo:
+        description: horizon-mixins git repository
+        required: true
+        default: https://github.com/horizon-rust/horizon-mixins
+        type: string
+      mixins_revision:
+        description: >-
+          horizon-mixins commit. Leave blank to use the revision pinned by the
+          first .hnmod.
+        required: false
+        default: ""
+        type: string
+      horizon_version:
+        description: >-
+          Human-readable base version for the manifest. Leave blank to use the
+          game version from the first .hnmod.
+        required: false
+        default: ""
+        type: string
+      allow_mismatch:
+        description: Allow bundles that pin different Horizon revisions
+        required: false
+        default: false
+        type: boolean
+      release_tag:
+        description: >-
+          Optional release tag. When set, the .hmmod and its SHA-256 are
+          uploaded to that GitHub release (created if missing).
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-hmmod-${{ github.ref }}-${{ inputs.out }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Compile mods into one .hmmod
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build hmloader
+        run: cargo build --release --locked
+
+      - name: Resolve .hnmod inputs
+        id: inputs
+        env:
+          MODS_INPUT: ${{ inputs.mods }}
+          OUT_NAME: ${{ inputs.out }}
+          MIXINS_REVISION: ${{ inputs.mixins_revision }}
+          HORIZON_VERSION: ${{ inputs.horizon_version }}
+          ALLOW_MISMATCH: ${{ inputs.allow_mismatch }}
+        run: |
+          set -euo pipefail
+          mkdir -p .agent-work/build .agent-work/logs .agent-work/outputs
+          python3 scripts/resolve_build_inputs.py \
+            --mods "$MODS_INPUT" \
+            --out "$OUT_NAME" \
+            --mixins-revision "$MIXINS_REVISION" \
+            --horizon-version "$HORIZON_VERSION" \
+            --allow-mismatch "$ALLOW_MISMATCH" \
+            --inputs-dir .agent-work/tmp/build-inputs \
+            --mods-file .agent-work/tmp/build-inputs/mods.txt
+
+      - name: Restore Horizon Cargo cache
+        uses: actions/cache@v4
+        with:
+          path: .agent-work/build/horizon-cargo
+          key: horizon-cargo-${{ runner.os }}-${{ inputs.profile }}-${{ steps.inputs.outputs.horizon_revision }}-mixins-${{ steps.inputs.outputs.mixins_revision || 'default' }}
+          restore-keys: |
+            horizon-cargo-${{ runner.os }}-${{ inputs.profile }}-${{ steps.inputs.outputs.horizon_revision }}-
+
+      - name: Check out Horizon
+        env:
+          HORIZON_REPO: ${{ inputs.horizon_repo }}
+          HORIZON_REVISION: ${{ steps.inputs.outputs.horizon_revision }}
+        run: |
+          set -euo pipefail
+          git init -q horizon-src
+          git -C horizon-src remote add origin "$HORIZON_REPO"
+          if ! git -C horizon-src fetch --depth 1 origin "$HORIZON_REVISION"; then
+            echo "Shallow fetch failed; fetching the full history for $HORIZON_REVISION"
+            git -C horizon-src fetch origin
+          fi
+          git -C horizon-src checkout -q --detach "$HORIZON_REVISION"
+
+      - name: Check out horizon-mixins
+        env:
+          MIXINS_REPO: ${{ inputs.mixins_repo }}
+          MIXINS_REVISION: ${{ steps.inputs.outputs.mixins_revision }}
+        run: |
+          set -euo pipefail
+          if [ -z "$MIXINS_REVISION" ]; then
+            echo "No horizon-mixins pin; using the default branch"
+            git clone --depth 1 "$MIXINS_REPO" horizon-mixins
+          else
+            git init -q horizon-mixins
+            git -C horizon-mixins remote add origin "$MIXINS_REPO"
+            if ! git -C horizon-mixins fetch --depth 1 origin "$MIXINS_REVISION"; then
+              echo "Shallow fetch failed; fetching the full history for $MIXINS_REVISION"
+              git -C horizon-mixins fetch origin
+            fi
+            git -C horizon-mixins checkout -q --detach "$MIXINS_REVISION"
+          fi
+
+      - name: Compile and package
+        id: convert
+        env:
+          OUT_NAME: ${{ steps.inputs.outputs.out }}
+          HORIZON_VERSION: ${{ steps.inputs.outputs.horizon_version }}
+          PROFILE: ${{ inputs.profile }}
+          ALLOW_MISMATCH: ${{ inputs.allow_mismatch }}
+          MOD_COUNT: ${{ steps.inputs.outputs.mod_count }}
+          MODS_SUMMARY: ${{ steps.inputs.outputs.mods_summary }}
+          HORIZON_REVISION: ${{ steps.inputs.outputs.horizon_revision }}
+          MIXINS_REVISION: ${{ steps.inputs.outputs.mixins_revision }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          mapfile -t mods < "${{ steps.inputs.outputs.mods_file }}"
+          if [ "${#mods[@]}" -eq 0 ]; then
+            echo "No .hnmod files resolved" >&2
+            exit 1
+          fi
+
+          args=(
+            convert "${mods[@]}"
+            --out ".agent-work/outputs/$OUT_NAME"
+            --source horizon-src
+            --mixins horizon-mixins
+            --profile "$PROFILE"
+            --target-dir .agent-work/build/horizon-cargo
+            --work-dir .agent-work/build/work
+          )
+          if [ -n "$HORIZON_VERSION" ]; then
+            args+=(--horizon-version "$HORIZON_VERSION")
+          fi
+          if [ "$ALLOW_MISMATCH" = "true" ]; then
+            args+=(--allow-mismatch)
+          fi
+
+          started=$(date +%s)
+          ./target/release/hmloader "${args[@]}" \
+            2>&1 | tee ".agent-work/logs/build-$RUN_ID.log"
+          elapsed=$(( $(date +%s) - started ))
+
+          output=".agent-work/outputs/$OUT_NAME"
+          size=$(stat -c%s "$output")
+          hash=$(sha256sum "$output" | cut -d' ' -f1)
+          printf '%s  %s\n' "$hash" "$OUT_NAME" > "$output.sha256"
+
+          {
+            echo "elapsed_seconds=$elapsed"
+            echo "size_bytes=$size"
+            echo "sha256=$hash"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## .hmmod build"
+            echo
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Mods | $MOD_COUNT: \`$MODS_SUMMARY\` |"
+            echo "| Horizon | \`$HORIZON_REVISION\` |"
+            echo "| horizon-mixins | \`${MIXINS_REVISION:-default branch}\` |"
+            echo "| Profile | \`$PROFILE\` |"
+            echo "| Build time | ${elapsed}s |"
+            echo "| Size | ${size} bytes |"
+            echo "| SHA-256 | \`$hash\` |"
+            echo "| Artifact | \`$OUT_NAME\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload .hmmod artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hmmod-${{ steps.inputs.outputs.out }}-${{ github.run_id }}
+          path: |
+            .agent-work/outputs/${{ steps.inputs.outputs.out }}
+            .agent-work/outputs/${{ steps.inputs.outputs.out }}.sha256
+            .agent-work/logs/build-${{ github.run_id }}.log
+          if-no-files-found: error
+
+      - name: Upload to GitHub release
+        if: inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+          OUT_NAME: ${{ steps.inputs.outputs.out }}
+          SHA256: ${{ steps.convert.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          output=".agent-work/outputs/$OUT_NAME"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$output" "$output.sha256" --clobber
+          else
+            gh release create "$TAG" "$output" "$output.sha256" \
+              --target "$GITHUB_SHA" \
+              --title "$TAG" \
+              --notes "Precompiled .hmmod built by workflow run $GITHUB_RUN_ID. SHA-256: \`$SHA256\`."
+          fi

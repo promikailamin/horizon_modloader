@@ -1,0 +1,4 @@
+Launching example_mod 0.1.0 (example_mod d61e35288622)
+  client:   .agent-work/tmp/workflow-home/store/example_mod-0.1.0-d61e35288622-2941ba8a88f6/game/horizon-client
+  instance: .agent-work/tmp/workflow-home/instances/example_mod
+  command:  cd ".agent-work/tmp/workflow-home/instances/example_mod" && HORIZON_HMMOD_BUILD="d61e35288622cf8e5a7077c005a91412acb4acb83fa5a54cac40c3a9b6589e1c" HORIZON_HMMOD_ID="example_mod" ".agent-work/tmp/workflow-home/store/example_mod-0.1.0-d61e35288622-2941ba8a88f6/game/horizon-client" "--help"

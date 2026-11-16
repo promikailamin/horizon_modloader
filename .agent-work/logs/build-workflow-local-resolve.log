@@ -1,0 +1,5 @@
+resolved 1 mod(s):
+- `example_mod` 0.1.0 (`.hnmod`: `example_mod-0.1.0.hnmod`)
+Horizon commit:  ba6344a59cb9e755b730dcf02285fc0d33b97d3c
+mixins commit:   d9c83d7096b7ea5b83678da2efdfd6161f74997e
+output:          example_mod-0.1.0-workflow.hmmod

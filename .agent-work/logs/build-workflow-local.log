@@ -1,0 +1,45 @@
+==> applying mixins into .agent-work/build/work/d61e35288622cf8e/stage
+==> horizon-mixins apply
+{
+  "bridges": 0,
+  "crates": 0,
+  "data": 0,
+  "injections": 1,
+  "modules": 1,
+  "post_build": 0,
+  "seconds": 24.22070859,
+  "stage": "/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage",
+  "stage_changed": false,
+  "states": 0,
+  "status": "ok",
+  "transformation_seconds": 24.220691898
+}
+==> cargo fetch
+==> cargo build horizon-client
+   Compiling horizon-core v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-core)
+   Compiling wgpu-hal v30.0.1 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/third_party/wgpu-hal)
+   Compiling horizon-shader-api v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-shader-api)
+   Compiling horizon-telemetry v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-telemetry)
+   Compiling horizon-world v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-world)
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling wgpu-core v30.0.1
+   Compiling horizon-theme v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-theme)
+   Compiling horizon-assets v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-assets)
+   Compiling wgpu v30.0.1
+   Compiling horizon-hdr v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-hdr)
+   Compiling horizon-shaders v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-shaders)
+   Compiling horizon-bench v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-bench)
+   Compiling horizon-client-core v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-client-core)
+   Compiling horizon-protocol v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-protocol)
+   Compiling horizon-command v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-command)
+   Compiling horizon-items v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-items)
+   Compiling horizon-client-input v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-client-input)
+   Compiling horizon-threads v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-threads)
+   Compiling horizon-client v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-client)
+   Compiling horizon-client-render v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-client-render)
+   Compiling horizon-mods v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-mods)
+   Compiling horizon-friends v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-friends)
+   Compiling horizon-server-files v0.1.0 (/home/runner/work/horizon_modloader/horizon_modloader/.agent-work/build/work/d61e35288622cf8e/stage/crates/horizon-server-files)
+    Finished `fast` profile [optimized] target(s) in 5m 07s
+==> packing .agent-work/outputs/example_mod-0.1.0-workflow.hmmod
+==> wrote .agent-work/outputs/example_mod-0.1.0-workflow.hmmod (25142667 bytes, build d61e35288622, executable 72080224 bytes)

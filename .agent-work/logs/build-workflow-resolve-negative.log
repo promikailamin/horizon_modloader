@@ -1,0 +1,13 @@
+Resolver negative tests (synthetic copies of the test bundle):
+
+$ python3 scripts/resolve_build_inputs.py --mods "tests/fixtures/example_mod-0.1.0.hnmod <other_horizon.hnmod>" ...
+error: bundles pin different Horizon revisions (example_mod=ba6344a59cb9e755b730dcf02285fc0d33b97d3c, other_mod=1111111111111111111111111111111111111111); build them separately or set allow_mismatch
+exit status: 1
+
+$ python3 scripts/resolve_build_inputs.py --mods "tests/fixtures/example_mod-0.1.0.hnmod <other_mixins.hnmod>" ...
+error: bundles pin different horizon-mixins revisions (2222222222222222222222222222222222222222, d9c83d7096b7ea5b83678da2efdfd6161f74997e); set mixins_revision or allow_mismatch
+exit status: 1
+
+A third test with two bundles using the same mod id was also rejected:
+error: two bundles have the same mod id: example_mod
+exit status: 1

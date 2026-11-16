@@ -46,6 +46,14 @@ struct NativeModJson<'a> {
     version: &'a str,
 }
 
+fn resolve_target_dir(target_dir: Option<&Path>) -> Result<Option<PathBuf>> {
+    Ok(match target_dir {
+        Some(td) if td.is_absolute() => Some(td.to_path_buf()),
+        Some(td) => Some(std::env::current_dir()?.join(td)),
+        None => None,
+    })
+}
+
 fn run(mut cmd: Command, what: &str) -> Result<()> {
     eprintln!("==> {what}");
     let status = cmd
@@ -263,6 +271,10 @@ pub fn convert(opts: &ConvertOptions) -> Result<PathBuf> {
                 .arg(stage.join("Cargo.toml"));
             run(fetch, "cargo fetch")?;
         }
+        // Cargo runs inside `stage`, so a relative --target-dir would otherwise
+        // be resolved there while the artifact lookup below used the caller's
+        // working directory. Pin both to the same absolute path.
+        let target_dir = resolve_target_dir(opts.target_dir.as_deref())?;
         let mut build = Command::new("cargo");
         build.current_dir(&stage).args([
             "build",
@@ -278,14 +290,11 @@ pub fn convert(opts: &ConvertOptions) -> Result<PathBuf> {
         if opts.offline {
             build.arg("--offline");
         }
-        if let Some(td) = &opts.target_dir {
+        if let Some(td) = &target_dir {
             build.arg("--target-dir").arg(td);
         }
         run(build, "cargo build horizon-client")?;
-        let target_dir = opts
-            .target_dir
-            .clone()
-            .unwrap_or_else(|| stage.join("target"));
+        let target_dir = target_dir.unwrap_or_else(|| stage.join("target"));
         let candidate = target_dir.join(&opts.profile).join(executable_name());
         if !candidate.is_file() {
             anyhow::bail!(
@@ -466,4 +475,30 @@ pub fn pack_prebuilt(
         },
     )?;
     Ok(out.to_path_buf())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_target_dir;
+    use std::path::PathBuf;
+
+    #[test]
+    fn relative_target_dir_is_resolved_from_the_caller_working_directory() {
+        let relative = PathBuf::from("build/relative-target");
+        let resolved = resolve_target_dir(Some(&relative)).unwrap().unwrap();
+        assert!(resolved.is_absolute());
+        assert!(resolved.ends_with(&relative));
+    }
+
+    #[test]
+    fn absolute_target_dir_is_kept_as_is() {
+        let absolute = std::env::temp_dir().join("hmloader-absolute-target");
+        let resolved = resolve_target_dir(Some(&absolute)).unwrap().unwrap();
+        assert_eq!(resolved, absolute);
+    }
+
+    #[test]
+    fn no_target_dir_stays_none() {
+        assert_eq!(resolve_target_dir(None).unwrap(), None);
+    }
 }

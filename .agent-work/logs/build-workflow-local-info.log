@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "kind": "prebuilt-game",
+  "id": "example_mod",
+  "name": "example_mod",
+  "version": "0.1.0",
+  "horizon_revision": "ba6344a59cb9e755b730dcf02285fc0d33b97d3c",
+  "horizon_version": "26.3",
+  "target": "x86_64-unknown-linux-gnu",
+  "profile": "fast",
+  "build_id": "d61e35288622cf8e5a7077c005a91412acb4acb83fa5a54cac40c3a9b6589e1c",
+  "executable": "game/horizon-client",
+  "source_sha256": "913b7b153708d79d9aa6e66667fe67b0f02b8a0cceea00a9a1882782b8c3425d",
+  "source_bundle": "example_mod-0.1.0.hnmod",
+  "mods": [
+    {
+      "id": "example_mod",
+      "version": "0.1.0"
+    }
+  ],
+  "files": {
+    "game/horizon-client": "071122321fbfd990d55de2973c66b280977120a64ea52a28a058e942cca01cc7",
+    "game/native-mods.json": "250d496e0a43a706f4d5868363527f3ef142a63eb65f6e2e059372df96b72966",
+    "source/example_mod-0.1.0.hnmod": "c41bc192214384a75fbc64b5377869da2e16dbbd2cf20e2ae6353b7a82669c0d"
+  },
+  "notes": "Precompiled Horizon client for 1 mod(s). Built from Horizon ba6344a59cb9e755b730dcf02285fc0d33b97d3c with profile fast."
+}
+
+archive: .agent-work/outputs/example_mod-0.1.0-workflow.hmmod
+size:    25142667 bytes

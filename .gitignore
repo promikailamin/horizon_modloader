@@ -1,7 +1,10 @@
 /target
+/.agent-work/build/
 /.agent-work/tmp/
 /.agent-work/tools/launcher/
+/.agent-work/tools/bin/
 /.agent-work/tools/*.tar.gz
 /.hmloader-work/
 *.hmmod-store/
+__pycache__/
 .agent-work/outputs/*.hmmod

@@ -123,7 +123,12 @@ Horizon's prepared game files are missing: no horizon-resources.json in .../26.3
 ## Automated tests
 
 ```
-$ cargo test
+$ cargo test --all-targets
+running 3 tests
+test convert::tests::absolute_target_dir_is_kept_as_is ... ok
+test convert::tests::relative_target_dir_is_resolved_from_the_caller_working_directory ... ok
+test convert::tests::no_target_dir_stays_none ... ok
+...
 running 5 tests
 test reads_the_test_hnmod_fixture ... ok
 test rejects_path_traversal_in_archive ... ok
@@ -131,8 +136,10 @@ test detects_tampering_after_install ... ok
 test packs_installs_verifies_and_launches ... ok
 test cli_pack_install_list_and_dry_run ... ok
 
-test result: ok. 5 passed; 0 failed
+test result: ok. 8 passed; 0 failed
 ```
+
+`cargo fmt --all --check` and `cargo clippy --all-targets -- -D warnings` also passed.
 
 Logs are preserved under `.agent-work/logs/`:
 
@@ -145,7 +152,55 @@ Logs are preserved under `.agent-work/logs/`:
 | `convert-full-build.log` | `hmloader convert` full compile |
 | `install-test.log` | install/list/verify |
 | `launch-help.log` | launching the precompiled client |
+| `build-workflow-local*.log` | local reproduction of `.github/workflows/build.yml` |
 
+## Build workflow
+
+The `Build .hmmod` dispatch workflow was reproduced locally with the same inputs as
+`.github/workflows/build.yml` (one `tests/fixtures/example_mod-0.1.0.hnmod`, profile `fast`,
+relative `--target-dir .agent-work/build/horizon-cargo`):
+
+```
+resolved 1 mod(s):
+- `example_mod` 0.1.0 (`.hnmod`: `example_mod-0.1.0.hnmod`)
+Horizon commit:  ba6344a59cb9e755b730dcf02285fc0d33b97d3c
+mixins commit:   d9c83d7096b7ea5b83678da2efdfd6161f74997e
+...
+Finished `fast` profile [optimized] target(s) in 5m 07s
+==> wrote .agent-work/outputs/example_mod-0.1.0-workflow.hmmod \
+      (25142667 bytes, build d61e35288622, executable 72080224 bytes)
+elapsed_seconds=335 size=25142667 sha256=2941ba8a88f683cc5f679829d2278d0cc4d99c9cd2046dc7cf960716af2ebcc0
+```
+
+That run used a warm Cargo target cache and took 5m35s of wall time. The first attempt, with a cold
+cache, spent 7m21s in Cargo alone. This matches the documented 6-7 minute warm estimate for one mod;
+adding more bundles to the same dispatch reuses the one client compile and only adds mixin passes.
+
+The workflow artifact was installed and checked in a fresh home:
+
+```
+$ hmloader install example_mod-0.1.0-workflow.hmmod
+Installed example_mod 0.1.0 (example_mod) -> .../mods/example_mod-0.1.0.hmmod
+Build d61e35288622 (1 mods)
+Verified 3 files in .../store/example_mod-0.1.0-d61e35288622-2941ba8a88f6
+
+$ hmloader verify example_mod
+OK: example_mod 0.1.0 (3 files, target x86_64-unknown-linux-gnu, Horizon ba6344a...)
+
+$ hmloader launch example_mod --dry-run -- --help
+.../game/horizon-client "--help"
+
+$ strings .../game/horizon-client | grep -F '[example_mod]'
+[example_mod] Breaking block at
+```
+
+The relative `--target-dir` path exercised a converter bug: Cargo resolved it inside the staged
+workspace while the artifact lookup used the caller's directory. `hmloader` now resolves relative
+target directories from the caller's working directory, and the unit tests above pin that behavior.
+
+The resolver's compatibility checks were also exercised with synthetic bundles: a different Horizon
+pin, a different `horizon-mixins` pin and a duplicate mod id were each rejected with exit status 1.
+The output is in `.agent-work/logs/build-workflow-resolve-negative.log`.
 
 ## Official launcher import
 

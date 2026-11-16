@@ -78,6 +78,20 @@ This is the same trade-off as shipping a prebuilt modded game: you trade disk sp
 combination for a zero-compile player experience. A runtime hook ABI would be a much larger change
 to Horizon itself; it is described as future work below.
 
+### Is this the same as the launcher's "import build"?
+
+At runtime, yes: the payload is a compiled `horizon-client`, the same kind of artifact the official
+launcher's `import-build` accepts. `hmloader import-launcher` literally hands that executable to
+`horizon-launcher import-build`. What `.hmmod` adds is the packaging and automation around the
+binary: a manifest with Horizon/target pins, per-file SHA-256 checks, the original `.hnmod` for
+inspection, and install/verify/launch commands that work without the official launcher. A bare
+`import-build` is an executable imported into one launcher installation and has no portable package
+metadata of its own.
+
+So this is not a second mod mechanism or a more powerful loader. It is the same compiled client,
+packaged so it can be distributed, verified and produced automatically. The build workflow below
+performs exactly that compile/import-build step for one or many mods.
+
 ## Requirements
 
 ### Player
@@ -243,6 +257,30 @@ that the mixins apply together.
 
 Attach the `.hmmod` to a GitHub release and publish its SHA-256 from `sha256sum`. Players only need
 the file and `hmloader`; they never need your source.
+
+### Build from GitHub Actions
+
+`.github/workflows/build.yml` compiles mods on a workflow dispatch. Use the Actions UI
+(**Build .hmmod** -> **Run workflow**) or:
+
+```sh
+gh workflow run build.yml \
+  -f mods="tests/fixtures/example_mod-0.1.0.hnmod" \
+  -f out="example_mod-0.1.0.hmmod" \
+  -f profile=fast
+```
+
+`mods` accepts repository-relative paths or public URLs separated by spaces, commas or newlines.
+The workflow compiles all of them together into one `.hmmod` (like a modpack), reads the Horizon pin
+from the first bundle, checks out the pinned Horizon and `horizon-mixins` revisions, builds on a
+Linux x86-64 runner and uploads `<out>` plus `<out>.sha256` as an artifact. Set `release_tag` to
+also attach them to a GitHub release. See [docs/BUILD_WORKFLOW.md](docs/BUILD_WORKFLOW.md) for every
+input and for troubleshooting.
+
+On the 4-vCPU validation runner a warm-cache build took about 6-7 minutes total: roughly 5m42s of
+Cargo compilation, about 20s of mixin application and under a minute of source export/staging.
+Adding mods to the same dispatch shares that one compile; only the mixin application grows. A cold
+Cargo cache can add tens of minutes.
 
 ## Command reference
 
