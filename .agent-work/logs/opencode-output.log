@@ -1,8 +1,9 @@
 [0m
 > build · deepseek-v4.1-flash-free
 [0m
-I'll start by inspecting the repository to understand what this project actually is.
-[0m$ [0mgit log --oneline -10 && echo "---" && ls -la
+[0m$ [0mgit log --oneline -10 && echo "---STATUS---" && git status && echo "---FILES---" && ls -la
+75f8363 chore: recover OpenCode workspace [skip ci]
+8bcd92b Document whether C++ would allow mod-only builds
 8f3153b chore: recover OpenCode workspace [skip ci]
 a7f7d61 Update OpenCode execution log [skip ci]
 05dede8 Add dispatch workflow to build .hmmod packages
@@ -11,34 +12,67 @@ b14c17d Preserve issue #2 reply draft
 9c292fc Document hnmod vs hmmod capability differences
 70646da chore: recover OpenCode workspace [skip ci]
 d90fbad Final execution log
-5f825a0 Update execution log
-982b5f3 Validate import into the official Horizon launcher
----
-total 88
-drwxr-xr-x 9 runner runner  4096 Nov 16 00:55 .
-drwxr-xr-x 3 runner runner  4096 Nov 16 00:55 ..
-drwxr-xr-x 7 runner runner  4096 Nov 16 00:55 .agent-work
-drwxr-xr-x 7 runner runner  4096 Nov 16 00:55 .git
-drwxr-xr-x 3 runner runner  4096 Nov 16 00:55 .github
--rw-r--r-- 1 runner runner   200 Nov 16 00:55 .gitignore
--rw-r--r-- 1 runner runner 15657 Nov 16 00:55 Cargo.lock
--rw-r--r-- 1 runner runner   724 Nov 16 00:55 Cargo.toml
--rw-r--r-- 1 runner runner  1096 Nov 16 00:55 LICENSE
--rw-r--r-- 1 runner runner 18480 Nov 16 00:55 README.md
--rw-r--r-- 1 runner runner  1888 Nov 16 00:55 RELEASE_NOTES.md
-drwxr-xr-x 2 runner runner  4096 Nov 16 00:55 docs
-drwxr-xr-x 2 runner runner  4096 Nov 16 00:55 scripts
-drwxr-xr-x 2 runner runner  4096 Nov 16 00:55 src
-drwxr-xr-x 3 runner runner  4096 Nov 16 00:55 tests
+---STATUS---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .agent-work/logs/opencode-output.log
+
+no changes added to commit (use "git add" and/or "git commit -a")
+---FILES---
+total 92
+drwxr-xr-x 9 runner runner  4096 Nov 16 01:29 .
+drwxr-xr-x 3 runner runner  4096 Nov 16 01:29 ..
+drwxr-xr-x 7 runner runner  4096 Nov 16 01:29 .agent-work
+drwxr-xr-x 7 runner runner  4096 Nov 16 01:29 .git
+drwxr-xr-x 3 runner runner  4096 Nov 16 01:29 .github
+-rw-r--r-- 1 runner runner   200 Nov 16 01:29 .gitignore
+-rw-r--r-- 1 runner runner 15657 Nov 16 01:29 Cargo.lock
+-rw-r--r-- 1 runner runner   724 Nov 16 01:29 Cargo.toml
+-rw-r--r-- 1 runner runner  1096 Nov 16 01:29 LICENSE
+-rw-r--r-- 1 runner runner 21251 Nov 16 01:29 README.md
+-rw-r--r-- 1 runner runner  1888 Nov 16 01:29 RELEASE_NOTES.md
+drwxr-xr-x 2 runner runner  4096 Nov 16 01:29 docs
+drwxr-xr-x 2 runner runner  4096 Nov 16 01:29 scripts
+drwxr-xr-x 2 runner runner  4096 Nov 16 01:29 src
+drwxr-xr-x 3 runner runner  4096 Nov 16 01:29 tests
 [0m
-[0m$ [0mgit remote -v && echo "---" && git branch -a
-origin	https://github.com/promikailamin/horizon_modloader (fetch)
-origin	https://github.com/promikailamin/horizon_modloader (push)
----
-* main
-  remotes/origin/main
+[0m$ [0mfind . -maxdepth 2 -not -path './.git/*' -not -path './.git' | sort | head -100
+.
+./.agent-work
+./.agent-work/logs
+./.agent-work/outputs
+./.agent-work/tests
+./.agent-work/tmp
+./.agent-work/tools
+./.github
+./.github/workflows
+./.gitignore
+./Cargo.lock
+./Cargo.toml
+./LICENSE
+./README.md
+./RELEASE_NOTES.md
+./docs
+./docs/BUILD_WORKFLOW.md
+./docs/FORMAT.md
+./docs/VALIDATION.md
+./scripts
+./scripts/resolve_build_inputs.py
+./src
+./src/convert.rs
+./src/format.rs
+./src/hnmod.rs
+./src/lib.rs
+./src/main.rs
+./src/store.rs
+./tests
+./tests/cli.rs
+./tests/fixtures
 [0m
-The issue text mentions chess/image processing but this repo is a modloader. Let me investigate the actual codebase.
 [0m$ [0mcat README.md
 # hmloader — precompiled mods for Horizon
 
@@ -426,488 +460,6 @@ Two converter details worth knowing:
 - The `--mixins` checkout is used as given. The converter does not currently verify that it matches
   the `horizon-mixins` revision recorded in the bundle, so check it out at that revision yourself.
 
-## Limitations and future work
-
-- A stable runtime ABI for Horizon hooks would allow many small `.hmmod` files instead of one
-  prebuilt game per combination, and would remove the per-platform/per-combination build matrix.
-  Upstream has no such ABI today; this loader deliberately uses the supported source-mixin build and
-  packages its output.
-- The source converter supports ordinary mixin bundles. Bundles using extra `[[crate]]` packages or
-  `[[post_build]]` steps may need the official launcher's full native-build pipeline; those are
-  candidates for a `--launcher` backend.
-- Cross-compilation is not attempted: build on the platform you ship to.
-- The loader does not patch the official launcher's UI; it is a separate CLI that can optionally
-  import its build into the launcher.
-
-## Licence
-
-MIT for this loader and its original code. Horizon is MIT for its original work; dependencies,
-Minecraft assets and the Minecraft EULA keep their own terms. See [LICENSE](LICENSE).
-[0m
-[0m$ [0mcat Cargo.toml && echo "=== SRC ===" && ls -la src docs scripts tests .github/workflows
-[package]
-name = "hmloader"
-version = "0.1.0"
-edition = "2021"
-rust-version = "1.75"
-description = "Precompiled mod loader (.hmmod) for Horizon, the Rust Minecraft client"
-license = "MIT"
-repository = "https://github.com/promikailamin/horizon_modloader"
-
-[[bin]]
-name = "hmloader"
-path = "src/main.rs"
-
-[lib]
-name = "hmloader"
-path = "src/lib.rs"
-
-[dependencies]
-anyhow = "1"
-clap = { version = "4", features = ["derive", "env"] }
-hex = "0.4"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-sha2 = "0.10"
-tempfile = "3"
-toml = "0.8"
-walkdir = "2"
-zip = { version = "0.6", default-features = false, features = ["deflate"] }
-
-[dev-dependencies]
-
-[profile.release]
-lto = "thin"
-codegen-units = 1
-strip = true
-=== SRC ===
-.github/workflows:
-total 40
-drwxr-xr-x 2 runner runner  4096 Nov 16 00:55 .
-drwxr-xr-x 3 runner runner  4096 Nov 16 00:55 ..
--rw-r--r-- 1 runner runner  8782 Nov 16 00:55 build.yml
--rw-r--r-- 1 runner runner   702 Nov 16 00:55 ci.yml
--rw-r--r-- 1 runner runner 12439 Nov 16 00:55 opencode.yml
-
-docs:
-total 36
-drwxr-xr-x 2 runner runner 4096 Nov 16 00:55 .
-drwxr-xr-x 9 runner runner 4096 Nov 16 00:55 ..
--rw-r--r-- 1 runner runner 6819 Nov 16 00:55 BUILD_WORKFLOW.md
--rw-r--r-- 1 runner runner 4132 Nov 16 00:55 FORMAT.md
--rw-r--r-- 1 runner runner 8804 Nov 16 00:55 VALIDATION.md
-
-scripts:
-total 20
-drwxr-xr-x 2 runner runner 4096 Nov 16 00:55 .
-drwxr-xr-x 9 runner runner 4096 Nov 16 00:55 ..
--rwxr-xr-x 1 runner runner 8841 Nov 16 00:55 resolve_build_inputs.py
-
-src:
-total 80
-drwxr-xr-x 2 runner runner  4096 Nov 16 00:55 .
-drwxr-xr-x 9 runner runner  4096 Nov 16 00:55 ..
--rw-r--r-- 1 runner runner 16182 Nov 16 00:55 convert.rs
--rw-r--r-- 1 runner runner 13820 Nov 16 00:55 format.rs
--rw-r--r-- 1 runner runner  6230 Nov 16 00:55 hnmod.rs
--rw-r--r-- 1 runner runner   627 Nov 16 00:55 lib.rs
--rw-r--r-- 1 runner runner 11869 Nov 16 00:55 main.rs
--rw-r--r-- 1 runner runner 13609 Nov 16 00:55 store.rs
-
-tests:
-total 20
-drwxr-xr-x 3 runner runner 4096 Nov 16 00:55 .
-drwxr-xr-x 9 runner runner 4096 Nov 16 00:55 ..
--rw-r--r-- 1 runner runner 6231 Nov 16 00:55 cli.rs
-drwxr-xr-x 2 runner runner 4096 Nov 16 00:55 fixtures
-[0m
-[0m$ [0mls -R .agent-work | head -100 && echo "=== git log all ===" && git log --oneline --all | head -40
-.agent-work:
-logs
-outputs
-tests
-tmp
-tools
-
-.agent-work/logs:
-actionlint.log
-build-local-hmloader.log
-build-workflow-local-info.log
-build-workflow-local-install.log
-build-workflow-local-launch.log
-build-workflow-local-resolve.log
-build-workflow-local-summary.log
-build-workflow-local-verify.log
-build-workflow-local.log
-build-workflow-resolve-negative.log
-build.log
-convert-full-build.log
-convert-test.log
-final-install.log
-final-launch.log
-import-launcher.log
-install-test.log
-launch-help.log
-launcher-native-build.log
-opencode-output.log
-stage.log
-test.log
-
-.agent-work/outputs:
-SHA256SUMS
-example_mod-0.1.0-workflow.hmmod.sha256
-hmloader-x86_64-unknown-linux-gnu
-
-.agent-work/tests:
-
-.agent-work/tmp:
-
-.agent-work/tools:
-install-actionlint.sh
-=== git log all ===
-8f3153b chore: recover OpenCode workspace [skip ci]
-a7f7d61 Update OpenCode execution log [skip ci]
-05dede8 Add dispatch workflow to build .hmmod packages
-7b7a78d chore: recover OpenCode workspace [skip ci]
-b14c17d Preserve issue #2 reply draft
-9c292fc Document hnmod vs hmmod capability differences
-70646da chore: recover OpenCode workspace [skip ci]
-d90fbad Final execution log
-5f825a0 Update execution log
-982b5f3 Validate import into the official Horizon launcher
-571a072 Document release assets and final validation
-ac04ec7 Add hmloader: precompiled .hmmod format, converter and tests
-4b45200 Add OpenCode workflow for issue handling
-[0m
-[0m$ [0mls -la tests/fixtures && echo "=== docs list ===" && grep -rn "C++\|c++" . --include=*.md --include=*.rs -i | head -40
-total 12
-drwxr-xr-x 2 runner runner 4096 Nov 16 00:55 .
-drwxr-xr-x 3 runner runner 4096 Nov 16 00:55 ..
--rw-r--r-- 1 runner runner 1465 Nov 16 00:55 example_mod-0.1.0.hnmod
-=== docs list ===
-[0m
-[0m$ [0mfind . -path ./.git -prune -o -type f -print | sort
-./.agent-work/logs/actionlint.log
-./.agent-work/logs/build-local-hmloader.log
-./.agent-work/logs/build-workflow-local-info.log
-./.agent-work/logs/build-workflow-local-install.log
-./.agent-work/logs/build-workflow-local-launch.log
-./.agent-work/logs/build-workflow-local-resolve.log
-./.agent-work/logs/build-workflow-local-summary.log
-./.agent-work/logs/build-workflow-local-verify.log
-./.agent-work/logs/build-workflow-local.log
-./.agent-work/logs/build-workflow-resolve-negative.log
-./.agent-work/logs/build.log
-./.agent-work/logs/convert-full-build.log
-./.agent-work/logs/convert-test.log
-./.agent-work/logs/final-install.log
-./.agent-work/logs/final-launch.log
-./.agent-work/logs/import-launcher.log
-./.agent-work/logs/install-test.log
-./.agent-work/logs/launch-help.log
-./.agent-work/logs/launcher-native-build.log
-./.agent-work/logs/opencode-output.log
-./.agent-work/logs/stage.log
-./.agent-work/logs/test.log
-./.agent-work/outputs/SHA256SUMS
-./.agent-work/outputs/example_mod-0.1.0-workflow.hmmod.sha256
-./.agent-work/outputs/hmloader-x86_64-unknown-linux-gnu
-./.agent-work/tmp/.gitkeep
-./.agent-work/tools/install-actionlint.sh
-./.github/workflows/build.yml
-./.github/workflows/ci.yml
-./.github/workflows/opencode.yml
-./.gitignore
-./Cargo.lock
-./Cargo.toml
-./LICENSE
-./README.md
-./RELEASE_NOTES.md
-./docs/BUILD_WORKFLOW.md
-./docs/FORMAT.md
-./docs/VALIDATION.md
-./scripts/resolve_build_inputs.py
-./src/convert.rs
-./src/format.rs
-./src/hnmod.rs
-./src/lib.rs
-./src/main.rs
-./src/store.rs
-./tests/cli.rs
-./tests/fixtures/example_mod-0.1.0.hnmod
-[0m
-[0m$ [0mgit show --stat b14c17d && echo "=== 9c292fc ===" && git show --stat 9c292fc
-commit b14c17d4bee30f2015792f8dbee49bfe1c3d4e64
-Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-Date:   Sun Nov 15 23:39:00 2026 +0000
-
-    Preserve issue #2 reply draft
-
- .agent-work/logs/opencode-output.log | 64 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 64 insertions(+)
-=== 9c292fc ===
-commit 9c292fc5518f618919eba8947b5bec4d020e769e
-Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-Date:   Sun Nov 15 23:38:40 2026 +0000
-
-    Document hnmod vs hmmod capability differences
-    
-    Adds a dedicated section answering whether converting an .hnmod to an
-    .hmmod loses mod capabilities. Explains that mixin mods behave the same,
-    and documents the real packaging limits (per-target builds, one build per
-    mod combination, author-fixed profile, trust model, native build extras,
-    and the unverified horizon-mixins revision pin).
-    
-    Closes #2
-
- .agent-work/logs/opencode-output.log | 9851 ++--------------------------------
- README.md                            |   40 +-
- 2 files changed, 369 insertions(+), 9522 deletions(-)
-[0m
-[0m$ [0mgrep -n "Why an\|Limitations and future work\|## \|### " README.md
-19:## The problem
-39:## How it works
-59:### Why an `.hmmod` carries a whole client
-81:### Is this the same as the launcher's "import build"?
-95:## Requirements
-97:### Player
-104:### Mod author / converter
-113:## Quick start (player)
-160:### Resources
-182:### Use with the official launcher UI
-197:## Making an `.hmmod` (mod author)
-199:### 1. Get the source revisions
-216:### 2. Convert
-243:### 3. Combine several `.hnmod` mods into one package
-256:### 4. Publish
-261:### Build from GitHub Actions
-285:## Command reference
-303:## Safety model
-315:## Building `hmloader`
-334:## Tested in this repository
-352:## `.hnmod` vs `.hmmod`: is anything lost?
-387:## Limitations and future work
-400:## Licence
-[0m
-[0m$ [0mcat RELEASE_NOTES.md && echo "=== .gitignore ===" && cat .gitignore
-# hmloader 0.1.0
-
-First release of the precompiled `.hmmod` mod loader for Horizon.
-
-## Added
-
-- `.hmmod` format 1: deterministic ZIP with a JSON manifest, per-file SHA-256, target and Horizon
-  revision pins, and the original `.hnmod` source for transparency.
-- `hmloader` CLI: `info`, `install`, `list`, `remove`, `verify`, `launch`, `convert`, `pack`,
-  `import-launcher`, `doctor`.
-- `.hnmod` -> `.hmmod` converter that stages the pinned Horizon source with `horizon-mixins`,
-  compiles `horizon-client` once on the author machine and packages the result.
-- Combining several `.hnmod` files into one prebuilt `.hmmod`.
-- Optional import of a prebuilt client into the official Horizon launcher (tested with launcher
-  0.2.67: the build was imported and selected as its own version).
-- Path-traversal, symlink, duplicate and checksum validation; no scripts run during install.
-- Tests for packaging, installation, tampering detection, traversal rejection, `.hnmod` reading,
-  launch and the CLI.
-- Full user, author and format documentation.
-
-## Test package
-
-`example_mod-0.1.0.hmmod` is the included test `.hnmod` compiled against Horizon
-`ba6344a59cb9e755b730dcf02285fc0d33b97d3c` with profile `fast`.
-
-```
-sha256 a628e32cc4623b9e7afce722b4b2bf686e69c47da57d77574ea54ad114fdd7c9
-```
-
-It is a Linux x86-64 build and needs prepared Minecraft 26.3 resources to play.
-
-## Known limitations
-
-- A native Horizon mod is a compile-time source mixin, so an `.hmmod` contains a whole prebuilt
-  client. Several mods must be converted together; arbitrary small runtime plugins need an upstream
-  hook ABI that does not exist yet.
-- Builds are platform-specific and pinned to one Horizon commit.
-- The CI runner cannot prepare Minecraft 26.3 resources without a licensed account, so interactive
-  gameplay was not run here. Install, verification, launch and the client's `--help` path were run.
-=== .gitignore ===
-/target
-/.agent-work/build/
-/.agent-work/tmp/
-/.agent-work/tools/launcher/
-/.agent-work/tools/bin/
-/.agent-work/tools/*.tar.gz
-/.hmloader-work/
-*.hmmod-store/
-__pycache__/
-.agent-work/outputs/*.hmmod
-[0m
-[0m$ [0msed -n '55,100p' README.md && echo "=== TAIL ===" && sed -n '350,405p' README.md
-listed in the manifest and checked on install, verify and launch. Paths are validated, symlinks
-are refused, and the prebuilt executable is the only file that gets execute permission. The
-complete binary format is in [docs/FORMAT.md](docs/FORMAT.md).
-
-### Why an `.hmmod` carries a whole client
-
-Because Horizon native mods are compile-time source mixins, a precompiled mod cannot be a small
-`.so`/`.dll` plugged into an unmodified game: there is no stable runtime plugin ABI for arbitrary
-mixins. To guarantee that a player never compiles anything, the `.hmmod` carries the game binary
-that was produced with the mod.
-
-Consequences, stated plainly:
-
-- One `.hmmod` is one prebuilt game. It runs alone.
-- To combine several mods, convert them **together** into one `.hmmod`. The result is a modpack-like
-  single build and uses exactly the same no-compile install.
-- Builds are platform-specific (`x86_64-unknown-linux-gnu`, `aarch64-apple-darwin`, …) and pin one
-  Horizon commit. `hmloader` refuses a package built for another target.
-- The `.hmmod` does not contain Minecraft resources. Horizon still needs the Minecraft 26.3
-  resources prepared by the official launcher (or `horizon-prepare`). Those files stay private and
-  outside the package.
-
-This is the same trade-off as shipping a prebuilt modded game: you trade disk space and one build per
-combination for a zero-compile player experience. A runtime hook ABI would be a much larger change
-to Horizon itself; it is described as future work below.
-
-### Is this the same as the launcher's "import build"?
-
-At runtime, yes: the payload is a compiled `horizon-client`, the same kind of artifact the official
-launcher's `import-build` accepts. `hmloader import-launcher` literally hands that executable to
-`horizon-launcher import-build`. What `.hmmod` adds is the packaging and automation around the
-binary: a manifest with Horizon/target pins, per-file SHA-256 checks, the original `.hnmod` for
-inspection, and install/verify/launch commands that work without the official launcher. A bare
-`import-build` is an executable imported into one launcher installation and has no portable package
-metadata of its own.
-
-So this is not a second mod mechanism or a more powerful loader. It is the same compiled client,
-packaged so it can be distributed, verified and produced automatically. The build workflow below
-performs exactly that compile/import-build step for one or many mods.
-
-## Requirements
-
-### Player
-
-- Linux x86-64/aarch64, macOS x86-64/arm64, or Windows x86-64/arm64 that can run Horizon itself.
-- The official **Horizon launcher** (recommended) or prepared Minecraft 26.3 resources for Horizon.
-=== TAIL ===
-not a code path; the client starts and parses its command line from the prebuilt package.
-
-## `.hnmod` vs `.hmmod`: is anything lost?
-
-Short answer: for an ordinary mixin-only native mod, **the mod does not lose capabilities**. Both
-formats end with the same `horizon-mixins apply` source transformation followed by a
-`cargo build -p horizon-client`. `hmloader` does not sandbox, rewrite or interpret the mixin code;
-it packages the client that build produced. There is no class of source-mixin mod that works as an
-`.hnmod` but cannot be expressed as an `.hmmod`.
-
-The differences are about builds and distribution:
-
-| Topic | `.hnmod` (upstream) | `.hmmod` (this loader) |
-|---|---|---|
-| Who compiles | Every player, 30-40 min | The author, once |
-| Mixin mechanism | `horizon-mixins` source mixins | Same mixin mechanism and build step |
-| Platforms | Each player builds for their own machine | The author must publish one package **per target** (Linux/macOS/Windows, x86-64/arm64); `hmloader` refuses a mismatched target |
-| Combining mods | Install several `.hnmod` files and rebuild together | Convert them together into one `.hmmod`; separate `.hmmod` files with different builds cannot be launched together |
-| Horizon upgrade | Rebuild against the new revision | The author must reconvert; a package pins one Horizon commit |
-| Build profile | Player can choose | Fixed by the author (`fast` or `release`) |
-| Download size | Small source bundle | Whole prebuilt client (tens of MiB), once per target/combination |
-| Trust | Built locally from source | Unsigned author-built binary; the original `.hnmod` is included under `source/` for inspection |
-| Native build extras | Handled by the Horizon native-build pipeline | Not validated here: bundles with extra `[[crate]]` packages or `[[post_build]]` steps may need that same pipeline |
-| Minecraft resources | Prepared separately | Same; assets are never packaged |
-
-So an `.hmmod` cannot be a single universal file for every OS/CPU, cannot be combined at runtime
-with an independently built package, and may not reproduce bundles that depend on Horizon's extra
-native build steps. Those are constraints of shipping a prebuilt game, not restrictions on the mod
-code itself. A runtime plugin ABI would remove most of them, but upstream has no such ABI today.
-
-Two converter details worth knowing:
-
-- Only `mixins/<id>/` is taken from an `.hnmod`; the rest of the bundle (for example
-  `horizon-native.json`) is used as metadata and carried along as provenance, not executed.
-- The `--mixins` checkout is used as given. The converter does not currently verify that it matches
-  the `horizon-mixins` revision recorded in the bundle, so check it out at that revision yourself.
-
-## Limitations and future work
-
-- A stable runtime ABI for Horizon hooks would allow many small `.hmmod` files instead of one
-  prebuilt game per combination, and would remove the per-platform/per-combination build matrix.
-  Upstream has no such ABI today; this loader deliberately uses the supported source-mixin build and
-  packages its output.
-- The source converter supports ordinary mixin bundles. Bundles using extra `[[crate]]` packages or
-  `[[post_build]]` steps may need the official launcher's full native-build pipeline; those are
-  candidates for a `--launcher` backend.
-- Cross-compilation is not attempted: build on the platform you ship to.
-- The loader does not patch the official launcher's UI; it is a separate CLI that can optionally
-  import its build into the launcher.
-
-## Licence
-
-MIT for this loader and its original code. Horizon is MIT for its original work; dependencies,
-Minecraft assets and the Minecraft EULA keep their own terms. See [LICENSE](LICENSE).
-[0m
-The issue is a conceptual architecture question. I'll answer it in the README with an accurate FAQ section, then commit/push and reply on the issue.
-[0m→ [0mRead README.md[90m [offset=380, limit=22][0m
-[0m
-[0m← [0mEdit README.md
-Index: /home/runner/work/horizon_modloader/horizon_modloader/README.md
-===================================================================
---- /home/runner/work/horizon_modloader/horizon_modloader/README.md
-+++ /home/runner/work/horizon_modloader/horizon_modloader/README.md
-@@ -383,8 +383,50 @@
-   `horizon-native.json`) is used as metadata and carried along as provenance, not executed.
- - The `--mixins` checkout is used as given. The converter does not currently verify that it matches
-   the `horizon-mixins` revision recorded in the bundle, so check it out at that revision yourself.
- 
-+## Would C++ instead of Rust let a mod build alone?
-+
-+No — the programming language is not what forces the whole client to be rebuilt. The **modding
-+model** is. Two different models are easy to confuse:
-+
-+| Model | What a mod is | Does it need a full game build? |
-+|---|---|---|
-+| Compile-time source mixins (what Horizon does today) | Rust source that `horizon-mixins` patches into the game's own source | **Yes.** Any change to the game source means rebuilding `horizon-client` |
-+| Runtime plugin / hook ABI | A separate `.so`/`.dll` the game loads and calls through a stable interface | **No.** The mod is built and shipped independently of the game |
-+
-+Horizon native mods are the first model. They rewrite Horizon's source and are then compiled into
-+the client, so there is nothing to build on its own. That is a property of source mixins, and it
-+would be exactly the same if the game were written in C++ and the mods patched C++ source: you would
-+still compile the whole game for every mod.
-+
-+The second model is what allows one small build per mod. It requires the game to expose a stable
-+runtime interface — a plugin SDK, a C ABI, or a hooking/loading system — and to load mods at launch
-+instead of linking them in. A C++ game *can* do this, but so can Rust: a Rust `cdylib` that exports
-+`extern "C"` functions is a normal C-ABI plugin. Language is not the deciding factor; the presence
-+of that runtime boundary is.
-+
-+C++ is in fact not automatically friendlier here. The C++ ABI is not stable across compilers,
-+compiler versions or standard-library layouts (name mangling, `std::string`/`std::vector` layout,
-+exceptions, RTTI), so C++ plugins still have to hide behind a stable C ABI or pin one toolchain and
-+compiler. Rust has the same constraint for binary plugins and solves it the same way: export a C ABI
-+or use a fixed toolchain. Neither language gives pluggable mods "for free".
-+
-+So:
-+
-+- If Horizon were a C++ game using source-level patches, this loader's `.hmmod` approach would look
-+  the same — still one prebuilt executable per mod or mod combination.
-+- If it were a C++ game designed with a stable plugin ABI, mods could be small independently built
-+  libraries. The equivalent is also possible in Rust today; Horizon simply does not expose such an
-+  ABI.
-+- The `.hmmod` format itself is language-agnostic: it packages a prebuilt executable plus a signed
-+  manifest. A C++ `horizon-client` would fit the same format unchanged.
-+
-+The way to remove the per-mod full build is therefore an **upstream runtime hook/plugin ABI**, not a
-+change of implementation language. Until Horizon has one, `hmloader` uses the supported source-mixin
-+build and packages its output; building only the mod is not possible with that model in either
-+language.
-+
- ## Limitations and future work
- 
- - A stable runtime ABI for Horizon hooks would allow many small `.hmmod` files instead of one
-   prebuilt game per combination, and would remove the per-platform/per-combination build matrix.
-
-[0m
-[0m$ [0msed -n '385,440p' README.md
-the `horizon-mixins` revision recorded in the bundle, so check it out at that revision yourself.
-
 ## Would C++ instead of Rust let a mod build alone?
 
 No — the programming language is not what forces the whole client to be rebuilt. The **modding
@@ -942,8 +494,8 @@ So:
 - If it were a C++ game designed with a stable plugin ABI, mods could be small independently built
   libraries. The equivalent is also possible in Rust today; Horizon simply does not expose such an
   ABI.
-- The `.hmmod` format itself is language-agnostic: it packages a prebuilt executable plus a signed
-  manifest. A C++ `horizon-client` would fit the same format unchanged.
+- The `.hmmod` format itself is language-agnostic: it packages a prebuilt executable plus a manifest
+  of SHA-256 hashes. A C++ `horizon-client` would fit the same format unchanged.
 
 The way to remove the per-mod full build is therefore an **upstream runtime hook/plugin ABI**, not a
 change of implementation language. Until Horizon has one, `hmloader` uses the supported source-mixin
@@ -962,84 +514,237 @@ language.
 - Cross-compilation is not attempted: build on the platform you ship to.
 - The loader does not patch the official launcher's UI; it is a separate CLI that can optionally
   import its build into the launcher.
+
+## Licence
+
+MIT for this loader and its original code. Horizon is MIT for its original work; dependencies,
+Minecraft assets and the Minecraft EULA keep their own terms. See [LICENSE](LICENSE).
+[0m
+[0m$ [0mfind .agent-work -type f | sort && echo "---DOCS---" && ls -la docs && echo "---GITHUB---" && find .github -type f
+.agent-work/logs/actionlint.log
+.agent-work/logs/build-local-hmloader.log
+.agent-work/logs/build-workflow-local-info.log
+.agent-work/logs/build-workflow-local-install.log
+.agent-work/logs/build-workflow-local-launch.log
+.agent-work/logs/build-workflow-local-resolve.log
+.agent-work/logs/build-workflow-local-summary.log
+.agent-work/logs/build-workflow-local-verify.log
+.agent-work/logs/build-workflow-local.log
+.agent-work/logs/build-workflow-resolve-negative.log
+.agent-work/logs/build.log
+.agent-work/logs/convert-full-build.log
+.agent-work/logs/convert-test.log
+.agent-work/logs/final-install.log
+.agent-work/logs/final-launch.log
+.agent-work/logs/import-launcher.log
+.agent-work/logs/install-test.log
+.agent-work/logs/issue-4-reply.md
+.agent-work/logs/launch-help.log
+.agent-work/logs/launcher-native-build.log
+.agent-work/logs/opencode-output.log
+.agent-work/logs/stage.log
+.agent-work/logs/test.log
+.agent-work/outputs/SHA256SUMS
+.agent-work/outputs/example_mod-0.1.0-workflow.hmmod.sha256
+.agent-work/outputs/hmloader-x86_64-unknown-linux-gnu
+.agent-work/tmp/.gitkeep
+.agent-work/tools/install-actionlint.sh
+---DOCS---
+total 36
+drwxr-xr-x 2 runner runner 4096 Nov 16 01:29 .
+drwxr-xr-x 9 runner runner 4096 Nov 16 01:29 ..
+-rw-r--r-- 1 runner runner 6819 Nov 16 01:29 BUILD_WORKFLOW.md
+-rw-r--r-- 1 runner runner 4132 Nov 16 01:29 FORMAT.md
+-rw-r--r-- 1 runner runner 8804 Nov 16 01:29 VALIDATION.md
+---GITHUB---
+.github/workflows/ci.yml
+.github/workflows/opencode.yml
+.github/workflows/build.yml
+[0m
+[0m$ [0mcat .agent-work/logs/issue-4-reply.md && echo "===SHOW PREV COMMITS===" && git show --stat 9c292fc && echo "===2===" && git show --stat b14c17d && echo "===CPP===" && git show --stat 8bcd92b
+# Issue #4 — reply draft
+
+Question: If this game were made with C++ instead of Rust, is a modloader-only build
+possible without building the whole game for every mod?
+
+Answer: The language is not the deciding factor; the modding model is.
+
+- Horizon native mods are compile-time source mixins. They patch the game's own source and are then
+  compiled into `horizon-client`, so there is no standalone mod artifact to build. This is identical
+  in Rust or C++: source-level patches require rebuilding the client.
+- Building only the mod requires a stable runtime plugin/hook boundary (a plugin SDK, a C ABI, or a
+  loader that loads `.so`/`.dll` mods at launch). A C++ game can provide this, but so can Rust via a
+  `cdylib` exporting `extern "C"` symbols. Horizon upstream does not expose such an ABI today.
+- C++ is not automatically easier: its ABI is unstable across compilers/versions/STL layouts, so
+  plugins still need a stable C ABI or a pinned toolchain, exactly like Rust binary plugins.
+- The `.hmmod` container is language-agnostic: it packages a prebuilt executable plus SHA-256
+  manifest hashes. A C++ client would fit the same format.
+
+Conclusion: removing the per-mod full build needs an upstream runtime hook/plugin ABI, not a change
+of implementation language. Until then `hmloader` uses the supported source-mixin build and ships
+the resulting client as an `.hmmod`.
+
+Documented in README.md, section "Would C++ instead of Rust let a mod build alone?".
+===SHOW PREV COMMITS===
+commit 9c292fc5518f618919eba8947b5bec4d020e769e
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Nov 15 23:38:40 2026 +0000
+
+    Document hnmod vs hmmod capability differences
+    
+    Adds a dedicated section answering whether converting an .hnmod to an
+    .hmmod loses mod capabilities. Explains that mixin mods behave the same,
+    and documents the real packaging limits (per-target builds, one build per
+    mod combination, author-fixed profile, trust model, native build extras,
+    and the unverified horizon-mixins revision pin).
+    
+    Closes #2
+
+ .agent-work/logs/opencode-output.log | 9851 ++--------------------------------
+ README.md                            |   40 +-
+ 2 files changed, 369 insertions(+), 9522 deletions(-)
+===2===
+commit b14c17d4bee30f2015792f8dbee49bfe1c3d4e64
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Nov 15 23:39:00 2026 +0000
+
+    Preserve issue #2 reply draft
+
+ .agent-work/logs/opencode-output.log | 64 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 64 insertions(+)
+===CPP===
+commit 8bcd92bab6d55b09bfcdcf51cd39051ca8d550e3
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Mon Nov 16 00:56:32 2026 +0000
+
+    Document whether C++ would allow mod-only builds
+    
+    Answers issue #4: the language is not what forces a full client rebuild.
+    Source mixins require recompiling the game in Rust or C++ alike; standalone
+    mod builds need a stable upstream runtime plugin/hook ABI, which Horizon does
+    not expose today. The .hmmod container is language-agnostic.
+
+ .agent-work/logs/issue-4-reply.md    |   23 +
+ .agent-work/logs/opencode-output.log | 6127 +++-------------------------------
+ README.md                            |   42 +
+ 3 files changed, 565 insertions(+), 5627 deletions(-)
+[0m
+[0m$ [0mgit log --all --oneline | head -50 && echo "---branches---" && git branch -a
+75f8363 chore: recover OpenCode workspace [skip ci]
+8bcd92b Document whether C++ would allow mod-only builds
+8f3153b chore: recover OpenCode workspace [skip ci]
+a7f7d61 Update OpenCode execution log [skip ci]
+05dede8 Add dispatch workflow to build .hmmod packages
+7b7a78d chore: recover OpenCode workspace [skip ci]
+b14c17d Preserve issue #2 reply draft
+9c292fc Document hnmod vs hmmod capability differences
+70646da chore: recover OpenCode workspace [skip ci]
+d90fbad Final execution log
+5f825a0 Update execution log
+982b5f3 Validate import into the official Horizon launcher
+571a072 Document release assets and final validation
+ac04ec7 Add hmloader: precompiled .hmmod format, converter and tests
+4b45200 Add OpenCode workflow for issue handling
+---branches---
+* main
+  remotes/origin/main
+[0m
+[0m$ [0mgrep -n "Would C++\|Limitations and future work\|^## " README.md
+19:## The problem
+39:## How it works
+95:## Requirements
+113:## Quick start (player)
+197:## Making an `.hmmod` (mod author)
+285:## Command reference
+303:## Safety model
+315:## Building `hmloader`
+334:## Tested in this repository
+352:## `.hnmod` vs `.hmmod`: is anything lost?
+387:## Would C++ instead of Rust let a mod build alone?
+429:## Limitations and future work
+442:## Licence
+[0m
+[0m→ [0mRead README.md[90m [offset=387, limit=56][0m
 [0m
 [0m← [0mEdit README.md
 Index: /home/runner/work/horizon_modloader/horizon_modloader/README.md
 ===================================================================
 --- /home/runner/work/horizon_modloader/horizon_modloader/README.md
 +++ /home/runner/work/horizon_modloader/horizon_modloader/README.md
-@@ -417,10 +417,10 @@
-   the same — still one prebuilt executable per mod or mod combination.
- - If it were a C++ game designed with a stable plugin ABI, mods could be small independently built
-   libraries. The equivalent is also possible in Rust today; Horizon simply does not expose such an
-   ABI.
--- The `.hmmod` format itself is language-agnostic: it packages a prebuilt executable plus a signed
--  manifest. A C++ `horizon-client` would fit the same format unchanged.
-+- The `.hmmod` format itself is language-agnostic: it packages a prebuilt executable plus a manifest
-+  of SHA-256 hashes. A C++ `horizon-client` would fit the same format unchanged.
- 
- The way to remove the per-mod full build is therefore an **upstream runtime hook/plugin ABI**, not a
+@@ -425,8 +425,63 @@
  change of implementation language. Until Horizon has one, `hmloader` uses the supported source-mixin
  build and packages its output; building only the mod is not possible with that model in either
+ language.
+ 
++## How Fabric and Forge work, and why that does not carry over to Horizon
++
++Vanilla Minecraft: Java Edition ships as JVM bytecode in `.jar` files. Fabric and Forge are themselves
++Java programs that run on the JVM, and they lean on features every JVM provides:
++
++- classes are loaded lazily at runtime by `ClassLoader`s from many separate jars;
++- bytecode is portable and can be transformed *before* a class is defined;
++- reflection and a binary API contract let the loader discover mod jars, read their metadata and call
++  their entry points.
++
++**Fabric** is the lighter of the two. `fabric-loader` finds mod jars, reads `fabric.mod.json`, wires
++up entry points (main, client, server, events) and applies [Mixin](https://github.com/SpongePowered/Mixin)
++bytecode transformations to vanilla classes as they are loaded. Fabric API is a separate jar that
++adds shared hooks and events on top. Minecraft itself is never recompiled; each mod stays its own
++small jar.
++
++**Forge** does the same job with more machinery: a `ModLauncher` pipeline, `mods.toml` metadata, an
++event bus, access transformers, coremods and (on modern versions) Mixin-based transformations. Like
++Fabric, it patches and loads at runtime instead of rebuilding the game.
++
++Both are therefore **runtime bytecode transformation plus plugin discovery**. They work because the
++game is bytecode executed by a VM with a dynamic class loader — not because Java is special. The mod
++is compiled against game/loader APIs once, and the loader splices it into the running program.
++
++Horizon has a different execution model: it is a native, ahead-of-time compiled Rust executable. At
++launch there is no JVM, no class loader, no portable bytecode to rewrite and no reflective plugin
++scan; the linker has already resolved calls to concrete machine code. Horizon's supported native mods
++are compile-time source mixins: `horizon-mixins` rewrites Horizon's own Rust source and
++`cargo build -p horizon-client` produces a new executable with the mod linked in. There is no small
++standalone mod artifact to hand to a loader, which is exactly why the build is unavoidable and why
++`.hmmod` ships the resulting client.
++
++| | Fabric / Forge on Minecraft: Java | Horizon (`hmloader`) today |
++|---|---|---|
++| Game artifact | JVM bytecode in jars | Native executable (AOT, no VM) |
++| Where the mod lives | Separate jar, loaded at runtime | Rust source, compiled into the client |
++| When it is applied | Class-load time (bytecode transform) | Build time (`horizon-mixins` + `cargo build`) |
++| Who provides the boundary | JVM class loading + Mixin/loader APIs | None; mixins are part of the build |
++| Result | Small per-mod download, no game rebuild | Prebuilt modded client per mod/combination |
++
++Could a loader bolt Fabric-style behaviour onto Horizon anyway? A native game *can* expose a runtime
++plugin system — load `.so`/`.dylib`/`.dll` files at startup, publish a stable C ABI with hooks or an
++event bus, and optionally patch machine code with detours, which is the closest native analogue of a
++bytecode transformer. But that boundary has to exist **in Horizon upstream**; it does not today.
++Faking it from outside is much harder than on the JVM because machine code is already compiled,
++native ABIs are platform/toolchain-specific, and optimization/inlining makes source-level hooks
++unreliable to patch blindly.
++
++So the answer is not "Fabric works, Horizon does not". It is that Fabric and Forge are loaders for a
++platform designed around runtime class loading, while Horizon's native mods are source patches linked
++into a native binary. If Horizon ever ships a stable runtime plugin/hook ABI, an `hmloader` could load
++small independent mod binaries the way Fabric does. Until then the honest options are the supported
++source-mixin build (shipped as `.hmmod`) or an upstream ABI change — a Java-style loader cannot be
++retrofitted from the outside.
++
+ ## Limitations and future work
+ 
+ - A stable runtime ABI for Horizon hooks would allow many small `.hmmod` files instead of one
+   prebuilt game per combination, and would remove the per-platform/per-combination build matrix.
 
 [0m
-[0m← [0mWrite .agent-work/logs/issue-4-reply.md
+[0m← [0mWrite .agent-work/logs/issue-5-reply.md
 Wrote file successfully.
 [0m
-[0m$ [0mgit status --short && echo "=== diff stat ===" && git diff --stat
-M .agent-work/logs/opencode-output.log
+[0m$ [0mgit diff --stat && git status --short
+.agent-work/logs/opencode-output.log | 841 +++++++++++------------------------
+ README.md                            |  55 +++
+ 2 files changed, 324 insertions(+), 572 deletions(-)
+ M .agent-work/logs/opencode-output.log
  M README.md
-?? .agent-work/logs/issue-4-reply.md
-=== diff stat ===
- .agent-work/logs/opencode-output.log | 6122 +++-------------------------------
- README.md                            |   42 +
- 2 files changed, 535 insertions(+), 5629 deletions(-)
+?? .agent-work/logs/issue-5-reply.md
 [0m
-[0m$ [0mgit add -A && git commit -m "Document whether C++ would allow mod-only builds
-
-Answers issue #4: the language is not what forces a full client rebuild.
-Source mixins require recompiling the game in Rust or C++ alike; standalone
-mod builds need a stable upstream runtime plugin/hook ABI, which Horizon does
-not expose today. The .hmmod container is language-agnostic." && git push origin main
-Author identity unknown
-
-*** Please tell me who you are.
-
-Run
-
-  git config --global user.email "you@example.com"
-  git config --global user.name "Your Name"
-
-to set your account's default identity.
-Omit --global to set the identity only in this repository.
-
-fatal: empty ident name (for <runner@runnervmccnms.ft3aihkd2upeldoaxjnmlf5u2h.jx.internal.cloudapp.net>) not allowed
-[0m
-[0m$ [0mgit config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com" && git commit -m "Document whether C++ would allow mod-only builds
-
-Answers issue #4: the language is not what forces a full client rebuild.
-Source mixins require recompiling the game in Rust or C++ alike; standalone
-mod builds need a stable upstream runtime plugin/hook ABI, which Horizon does
-not expose today. The .hmmod container is language-agnostic." && git push origin main
-[main 8bcd92b] Document whether C++ would allow mod-only builds
- 3 files changed, 565 insertions(+), 5627 deletions(-)
- create mode 100644 .agent-work/logs/issue-4-reply.md
-To https://github.com/promikailamin/horizon_modloader
-   8f3153b..8bcd92b  main -> main
-[0m
-[0m$ [0mgh issue comment "4" --repo "promikailamin/horizon_modloader" --body "Thanks for the question. Short answer: **the language is not what forces a full game rebuild — the modding model is.**
-
-Horizon native mods are **compile-time source mixins**: they patch the game's own source and are then compiled into \`horizon-client\`. There is no standalone mod artifact to build, so every mod change means rebuilding the client. That would be exactly the same if Horizon were written in C++ with source-level patches.
-
-Building *only* the mod requires a **stable runtime plugin/hook boundary** — a plugin SDK, a C ABI, or a loader that loads \`.so\`/\`.dll\` mods at launch instead of linking them in. A C++ game can provide that, but so can Rust: a Rust \`cdylib\` exporting \`extern \"C\"\` functions is a normal C-ABI plugin. Horizon upstream simply does not expose such an ABI today.
-
-C++ is not automatically easier here either: its ABI is unstable across compilers, compiler versions and STL layouts, so C++ plugins still need a stable C ABI or a pinned toolchain — the same constraint Rust binary plugins have. And \`.hmmod\` itself is language-agnostic: it packages a prebuilt executable plus SHA-256 manifest hashes, so a C++ client would fit the same format unchanged.
-
-**So:** to build mods independently you need an upstream runtime hook/plugin ABI, not a change of implementation language. Until Horizon has one, \`hmloader\` uses the supported mixin build and ships the resulting client as an \`.hmmod\`.
-
-I documented this in README.md under \"Would C++ instead of Rust let a mod build alone?\" (commit \`8bcd92b\`, pushed to \`main\`). Docs-only change; no tests were needed."
-https://github.com/promikailamin/horizon_modloader/issues/4#issuecomment-6904358127
-[0m
-Done. Answered issue #4 and documented it in `README.md` under "Would C++ instead of Rust let a mod build alone?".
-
-Core point: language isn't the deciding factor — compile-time source mixins force a full rebuild in Rust or C++, while mod-only builds need an upstream runtime plugin/hook ABI, which Horizon lacks today. Committed `8bcd92b`, pushed to `main`, and commented on the issue.

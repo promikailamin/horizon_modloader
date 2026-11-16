@@ -426,6 +426,61 @@ change of implementation language. Until Horizon has one, `hmloader` uses the su
 build and packages its output; building only the mod is not possible with that model in either
 language.
 
+## How Fabric and Forge work, and why that does not carry over to Horizon
+
+Vanilla Minecraft: Java Edition ships as JVM bytecode in `.jar` files. Fabric and Forge are themselves
+Java programs that run on the JVM, and they lean on features every JVM provides:
+
+- classes are loaded lazily at runtime by `ClassLoader`s from many separate jars;
+- bytecode is portable and can be transformed *before* a class is defined;
+- reflection and a binary API contract let the loader discover mod jars, read their metadata and call
+  their entry points.
+
+**Fabric** is the lighter of the two. `fabric-loader` finds mod jars, reads `fabric.mod.json`, wires
+up entry points (main, client, server, events) and applies [Mixin](https://github.com/SpongePowered/Mixin)
+bytecode transformations to vanilla classes as they are loaded. Fabric API is a separate jar that
+adds shared hooks and events on top. Minecraft itself is never recompiled; each mod stays its own
+small jar.
+
+**Forge** does the same job with more machinery: a `ModLauncher` pipeline, `mods.toml` metadata, an
+event bus, access transformers, coremods and (on modern versions) Mixin-based transformations. Like
+Fabric, it patches and loads at runtime instead of rebuilding the game.
+
+Both are therefore **runtime bytecode transformation plus plugin discovery**. They work because the
+game is bytecode executed by a VM with a dynamic class loader — not because Java is special. The mod
+is compiled against game/loader APIs once, and the loader splices it into the running program.
+
+Horizon has a different execution model: it is a native, ahead-of-time compiled Rust executable. At
+launch there is no JVM, no class loader, no portable bytecode to rewrite and no reflective plugin
+scan; the linker has already resolved calls to concrete machine code. Horizon's supported native mods
+are compile-time source mixins: `horizon-mixins` rewrites Horizon's own Rust source and
+`cargo build -p horizon-client` produces a new executable with the mod linked in. There is no small
+standalone mod artifact to hand to a loader, which is exactly why the build is unavoidable and why
+`.hmmod` ships the resulting client.
+
+| | Fabric / Forge on Minecraft: Java | Horizon (`hmloader`) today |
+|---|---|---|
+| Game artifact | JVM bytecode in jars | Native executable (AOT, no VM) |
+| Where the mod lives | Separate jar, loaded at runtime | Rust source, compiled into the client |
+| When it is applied | Class-load time (bytecode transform) | Build time (`horizon-mixins` + `cargo build`) |
+| Who provides the boundary | JVM class loading + Mixin/loader APIs | None; mixins are part of the build |
+| Result | Small per-mod download, no game rebuild | Prebuilt modded client per mod/combination |
+
+Could a loader bolt Fabric-style behaviour onto Horizon anyway? A native game *can* expose a runtime
+plugin system — load `.so`/`.dylib`/`.dll` files at startup, publish a stable C ABI with hooks or an
+event bus, and optionally patch machine code with detours, which is the closest native analogue of a
+bytecode transformer. But that boundary has to exist **in Horizon upstream**; it does not today.
+Faking it from outside is much harder than on the JVM because machine code is already compiled,
+native ABIs are platform/toolchain-specific, and optimization/inlining makes source-level hooks
+unreliable to patch blindly.
+
+So the answer is not "Fabric works, Horizon does not". It is that Fabric and Forge are loaders for a
+platform designed around runtime class loading, while Horizon's native mods are source patches linked
+into a native binary. If Horizon ever ships a stable runtime plugin/hook ABI, an `hmloader` could load
+small independent mod binaries the way Fabric does. Until then the honest options are the supported
+source-mixin build (shipped as `.hmmod`) or an upstream ABI change — a Java-style loader cannot be
+retrofitted from the outside.
+
 ## Limitations and future work
 
 - A stable runtime ABI for Horizon hooks would allow many small `.hmmod` files instead of one
