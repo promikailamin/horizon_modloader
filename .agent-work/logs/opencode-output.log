@@ -5323,3 +5323,77 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 .agent-work/logs/opencode-output.log:5188: trailing whitespace.
 +
 [0m
+[0m$ [0mgit status --short && git add -A && git commit -m "Add runtime folder loader and modpack combination" && git log -1 --format='%H %h %s'
+M .agent-work/logs/opencode-output.log
+ M README.md
+ M RELEASE_NOTES.md
+ M src/convert.rs
+ M src/lib.rs
+ M src/main.rs
+ M src/store.rs
+?? .agent-work/logs/issue-7-actionlint.log
+?? .agent-work/logs/issue-7-tests.log
+?? .github/workflows/loader.yml
+?? docs/RUNTIME_LOADER.md
+?? scripts/package_runtime_loader.sh
+?? src/runtime.rs
+?? tests/runtime.rs
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <runner@runnervmccnms.snxrawbkgs4ujgfefu00tczsdd.ex.internal.cloudapp.net>) not allowed
+[0m
+[0m$ [0mgit log -1 --format='%an <%ae>' && git config --local user.name 'opencode' && git config --local user.email 'opencode@users.noreply.github.com' && git commit -m "Add runtime folder loader and modpack combination" && git log -1 --format='%H %h %s'
+github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+[main 466b983] Add runtime folder loader and modpack combination
+ 14 files changed, 5636 insertions(+), 13525 deletions(-)
+ create mode 100644 .agent-work/logs/issue-7-actionlint.log
+ create mode 100644 .agent-work/logs/issue-7-tests.log
+ create mode 100644 .github/workflows/loader.yml
+ create mode 100644 docs/RUNTIME_LOADER.md
+ create mode 100755 scripts/package_runtime_loader.sh
+ create mode 100644 src/runtime.rs
+ create mode 100644 tests/runtime.rs
+466b983d7f0cf74115dfc35e72ff3838cac0a660 466b983 Add runtime folder loader and modpack combination
+[0m
+[0m$ [0mgit push origin main 2>&1 && git status --short && git log --oneline -3
+To https://github.com/promikailamin/horizon_modloader
+   a725c50..466b983  main -> main
+ M .agent-work/logs/opencode-output.log
+466b983 Add runtime folder loader and modpack combination
+a725c50 chore: recover OpenCode workspace [skip ci]
+2fa777b chore: recover OpenCode workspace [skip ci]
+[0m
+[0m$ [0m{ scripts/package_runtime_loader.sh target/debug/hmloader x86_64-unknown-linux-gnu .agent-work/tmp/loader-test && find .agent-work/tmp/loader-test -maxdepth 2 -type f -printf '%P %m\n' | sort && sh .agent-work/tmp/loader-test/run.sh --help; } 2>&1 | tee .agent-work/logs/issue-7-loader-bundle.log
+packaged .agent-work/tmp/loader-test for x86_64-unknown-linux-gnu
+README.txt 644
+hmloader 755
+mods/README.txt 644
+run.cmd 644
+run.sh 755
+Drop-in runtime loader: install a mod folder, then start a build that contains every installed mod
+
+Usage: hmloader runtime [OPTIONS] [DIR] [-- <ARGS>...]
+
+Arguments:
+  [DIR]      Folder containing .hmmod files. Defaults to the loader's mods folder
+  [ARGS]...  Arguments passed to horizon-client
+
+Options:
+      --home <HOME>            Data folder for installed mods and instances [env: HORIZON_HMMOD_HOME=]
+      --resources <RESOURCES>  Prepared Horizon resources (the folder holding horizon-resources.json)
+      --dry-run                Print the command instead of starting the game
+  -h, --help                   Print help
+[0m
+[0m← [0mWrite .agent-work/logs/issue-7-reply.md
+Wrote file successfully.
+[0m

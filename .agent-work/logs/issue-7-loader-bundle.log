@@ -1,0 +1,19 @@
+packaged .agent-work/tmp/loader-test for x86_64-unknown-linux-gnu
+README.txt 644
+hmloader 755
+mods/README.txt 644
+run.cmd 644
+run.sh 755
+Drop-in runtime loader: install a mod folder, then start a build that contains every installed mod
+
+Usage: hmloader runtime [OPTIONS] [DIR] [-- <ARGS>...]
+
+Arguments:
+  [DIR]      Folder containing .hmmod files. Defaults to the loader's mods folder
+  [ARGS]...  Arguments passed to horizon-client
+
+Options:
+      --home <HOME>            Data folder for installed mods and instances [env: HORIZON_HMMOD_HOME=]
+      --resources <RESOURCES>  Prepared Horizon resources (the folder holding horizon-resources.json)
+      --dry-run                Print the command instead of starting the game
+  -h, --help                   Print help
