@@ -748,3 +748,69 @@ Wrote file successfully.
  M README.md
 ?? .agent-work/logs/issue-5-reply.md
 [0m
+[0m$ [0mgrep -n "^## " README.md && git add -A && git commit -m "Document how Fabric/Forge differ from Horizon's native mod model
+
+Answers issue #5: Fabric and Forge rely on JVM runtime class loading and
+bytecode transformation, while Horizon is a native AOT Rust client whose
+mods are compile-time source mixins linked into the binary. Explains why a
+Fabric-style loader cannot be retrofitted from outside and what an upstream
+runtime plugin/hook ABI would enable." && git push
+19:## The problem
+39:## How it works
+95:## Requirements
+113:## Quick start (player)
+197:## Making an `.hmmod` (mod author)
+285:## Command reference
+303:## Safety model
+315:## Building `hmloader`
+334:## Tested in this repository
+352:## `.hnmod` vs `.hmmod`: is anything lost?
+387:## Would C++ instead of Rust let a mod build alone?
+429:## How Fabric and Forge work, and why that does not carry over to Horizon
+484:## Limitations and future work
+497:## Licence
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <runner@runnervmccnms.n1wtkookzvqe1ksdwboouqpdtc.phxx.internal.cloudapp.net>) not allowed
+[0m
+[0m$ [0mgit config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com" && git commit -m "Document how Fabric/Forge differ from Horizon's native mod model
+
+Answers issue #5: Fabric and Forge rely on JVM runtime class loading and
+bytecode transformation, while Horizon is a native AOT Rust client whose
+mods are compile-time source mixins linked into the binary. Explains why a
+Fabric-style loader cannot be retrofitted from outside and what an upstream
+runtime plugin/hook ABI would enable." && git push
+[main e311e09] Document how Fabric/Forge differ from Horizon's native mod model
+ 3 files changed, 376 insertions(+), 570 deletions(-)
+ create mode 100644 .agent-work/logs/issue-5-reply.md
+To https://github.com/promikailamin/horizon_modloader
+   75f8363..e311e09  main -> main
+[0m
+[0m$ [0mgh auth status 2>&1 | head -5
+github.com
+  ✓ Logged in to github.com account promikailamin (GH_TOKEN)
+  - Active account: true
+  - Git operations protocol: https
+  - Token: ghp_************************************
+[0m
+[0m← [0mWrite /tmp/issue5-comment.md
+Wrote file successfully.
+[0m
+[0m$ [0mgh issue comment "5" --repo "promikailamin/horizon_modloader" --body-file /tmp/issue5-comment.md
+https://github.com/promikailamin/horizon_modloader/issues/5#issuecomment-6904834571
+[0m
+[0m$ [0mgit status --short && git log --oneline -1 && git status -sb | head -1
+M .agent-work/logs/opencode-output.log
+e311e09 Document how Fabric/Forge differ from Horizon's native mod model
+## main...origin/main
+[0m
