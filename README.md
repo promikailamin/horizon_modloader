@@ -384,6 +384,48 @@ Two converter details worth knowing:
 - The `--mixins` checkout is used as given. The converter does not currently verify that it matches
   the `horizon-mixins` revision recorded in the bundle, so check it out at that revision yourself.
 
+## Would C++ instead of Rust let a mod build alone?
+
+No — the programming language is not what forces the whole client to be rebuilt. The **modding
+model** is. Two different models are easy to confuse:
+
+| Model | What a mod is | Does it need a full game build? |
+|---|---|---|
+| Compile-time source mixins (what Horizon does today) | Rust source that `horizon-mixins` patches into the game's own source | **Yes.** Any change to the game source means rebuilding `horizon-client` |
+| Runtime plugin / hook ABI | A separate `.so`/`.dll` the game loads and calls through a stable interface | **No.** The mod is built and shipped independently of the game |
+
+Horizon native mods are the first model. They rewrite Horizon's source and are then compiled into
+the client, so there is nothing to build on its own. That is a property of source mixins, and it
+would be exactly the same if the game were written in C++ and the mods patched C++ source: you would
+still compile the whole game for every mod.
+
+The second model is what allows one small build per mod. It requires the game to expose a stable
+runtime interface — a plugin SDK, a C ABI, or a hooking/loading system — and to load mods at launch
+instead of linking them in. A C++ game *can* do this, but so can Rust: a Rust `cdylib` that exports
+`extern "C"` functions is a normal C-ABI plugin. Language is not the deciding factor; the presence
+of that runtime boundary is.
+
+C++ is in fact not automatically friendlier here. The C++ ABI is not stable across compilers,
+compiler versions or standard-library layouts (name mangling, `std::string`/`std::vector` layout,
+exceptions, RTTI), so C++ plugins still have to hide behind a stable C ABI or pin one toolchain and
+compiler. Rust has the same constraint for binary plugins and solves it the same way: export a C ABI
+or use a fixed toolchain. Neither language gives pluggable mods "for free".
+
+So:
+
+- If Horizon were a C++ game using source-level patches, this loader's `.hmmod` approach would look
+  the same — still one prebuilt executable per mod or mod combination.
+- If it were a C++ game designed with a stable plugin ABI, mods could be small independently built
+  libraries. The equivalent is also possible in Rust today; Horizon simply does not expose such an
+  ABI.
+- The `.hmmod` format itself is language-agnostic: it packages a prebuilt executable plus a manifest
+  of SHA-256 hashes. A C++ `horizon-client` would fit the same format unchanged.
+
+The way to remove the per-mod full build is therefore an **upstream runtime hook/plugin ABI**, not a
+change of implementation language. Until Horizon has one, `hmloader` uses the supported source-mixin
+build and packages its output; building only the mod is not possible with that model in either
+language.
+
 ## Limitations and future work
 
 - A stable runtime ABI for Horizon hooks would allow many small `.hmmod` files instead of one
