@@ -5975,3 +5975,141 @@ horizon_revision=ba6344a59cb9e755b730dcf02285fc0d33b97d3c
 mixins_revision=d9c83d7096b7ea5b83678da2efdfd6161f74997e
 mod_count=1
 [0m
+[0m$ [0mgit add -A && git status --short | head -60 && git diff --cached --stat | tail -30
+A  .agent-work/logs/actionlint.log
+A  .agent-work/logs/build-local-hmloader.log
+A  .agent-work/logs/build-workflow-local-info.log
+A  .agent-work/logs/build-workflow-local-install.log
+A  .agent-work/logs/build-workflow-local-launch.log
+A  .agent-work/logs/build-workflow-local-resolve.log
+A  .agent-work/logs/build-workflow-local-summary.log
+A  .agent-work/logs/build-workflow-local-verify.log
+A  .agent-work/logs/build-workflow-local.log
+A  .agent-work/logs/build-workflow-resolve-negative.log
+M  .agent-work/logs/opencode-output.log
+A  .agent-work/logs/test.log
+A  .agent-work/outputs/example_mod-0.1.0-workflow.hmmod.sha256
+A  .agent-work/tools/install-actionlint.sh
+A  .github/workflows/build.yml
+M  .gitignore
+M  README.md
+A  docs/BUILD_WORKFLOW.md
+M  docs/VALIDATION.md
+A  scripts/resolve_build_inputs.py
+M  src/convert.rs
+ .agent-work/logs/actionlint.log                    |    0
+ .agent-work/logs/build-local-hmloader.log          |    2 +
+ .agent-work/logs/build-workflow-local-info.log     |   30 +
+ .agent-work/logs/build-workflow-local-install.log  |    4 +
+ .agent-work/logs/build-workflow-local-launch.log   |    4 +
+ .agent-work/logs/build-workflow-local-resolve.log  |    5 +
+ .agent-work/logs/build-workflow-local-summary.log  |    1 +
+ .agent-work/logs/build-workflow-local-verify.log   |    1 +
+ .agent-work/logs/build-workflow-local.log          |   45 +
+ .../logs/build-workflow-resolve-negative.log       |   13 +
+ .agent-work/logs/opencode-output.log               | 6282 ++++++++++++++++++--
+ .agent-work/logs/test.log                          |   87 +
+ .../example_mod-0.1.0-workflow.hmmod.sha256        |    1 +
+ .agent-work/tools/install-actionlint.sh            |    6 +
+ .github/workflows/build.yml                        |  243 +
+ .gitignore                                         |    3 +
+ README.md                                          |   38 +
+ docs/BUILD_WORKFLOW.md                             |  124 +
+ docs/VALIDATION.md                                 |   59 +-
+ scripts/resolve_build_inputs.py                    |  259 +
+ src/convert.rs                                     |   45 +-
+ 21 files changed, 6854 insertions(+), 398 deletions(-)
+[0m
+[0m$ [0mgit commit -m "Add dispatch workflow to build .hmmod packages" && git push origin main
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <runner@runnervmccnms.oo4emtzcarderlaieotjrbaaac.bx.internal.cloudapp.net>) not allowed
+[0m
+[0m$ [0mgit config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com" && git commit -m "Add dispatch workflow to build .hmmod packages" && git push origin main
+[main 05dede8] Add dispatch workflow to build .hmmod packages
+ 21 files changed, 6854 insertions(+), 398 deletions(-)
+ create mode 100644 .agent-work/logs/actionlint.log
+ create mode 100644 .agent-work/logs/build-local-hmloader.log
+ create mode 100644 .agent-work/logs/build-workflow-local-info.log
+ create mode 100644 .agent-work/logs/build-workflow-local-install.log
+ create mode 100644 .agent-work/logs/build-workflow-local-launch.log
+ create mode 100644 .agent-work/logs/build-workflow-local-resolve.log
+ create mode 100644 .agent-work/logs/build-workflow-local-summary.log
+ create mode 100644 .agent-work/logs/build-workflow-local-verify.log
+ create mode 100644 .agent-work/logs/build-workflow-local.log
+ create mode 100644 .agent-work/logs/build-workflow-resolve-negative.log
+ create mode 100644 .agent-work/logs/test.log
+ create mode 100644 .agent-work/outputs/example_mod-0.1.0-workflow.hmmod.sha256
+ create mode 100755 .agent-work/tools/install-actionlint.sh
+ create mode 100644 .github/workflows/build.yml
+ create mode 100644 docs/BUILD_WORKFLOW.md
+ create mode 100755 scripts/resolve_build_inputs.py
+To https://github.com/promikailamin/horizon_modloader
+   7b7a78d..05dede8  main -> main
+[0m
+[0m$ [0mgh issue comment 3 --repo promikailamin/horizon_modloader --body "$(cat <<'EOF'
+Implemented in commit `05dede8` (pushed to `main`).
+
+## Answer
+
+An `.hmmod` is the same kind of runtime artifact as a launcher import build: the payload is a compiled `horizon-client`, and `hmloader import-launcher` can hand it to `horizon-launcher import-build`. It is not a second mod mechanism. The difference is the package around the binary: Horizon/target pins, per-file SHA-256, the original `.hnmod` under `source/`, and install/verify/launch without the official launcher. A bare `import-build` is just an executable imported into one launcher installation and has no portable package metadata.
+
+**Time:** on the 4-vCPU validation runner, a warm-cache build of the test bundle took about **6-7 minutes total** (Cargo ~5m42s, mixin apply ~20s, source export/staging under a minute). A cold Cargo cache was 7m21s in Cargo alone. One mod and several mods in the same dispatch share the one Horizon compile; each extra bundle only adds a mixin pass, not another full build. Separate dispatches each pay a full compile.
+
+## Added
+
+- `.github/workflows/build.yml` — `workflow_dispatch` build of one or more `.hnmod` files into one `.hmmod`.
+  - `mods` accepts repo-relative paths and public URLs (spaces/commas/newlines).
+  - Reads the Horizon and `horizon-mixins` pins from the bundles.
+  - Builds on the runner, writes `<out>` + `<out>.sha256`, uploads the artifact and logs.
+  - Optional `release_tag` uploads to a GitHub release.
+  - Caches the Horizon Cargo target directory between runs.
+- `scripts/resolve_build_inputs.py` — downloads/copies bundles, validates ids and pins, and rejects incompatible combinations.
+- `docs/BUILD_WORKFLOW.md` — all inputs, examples, timings and troubleshooting.
+- README section answering the import-build question and showing dispatch usage.
+- Converter fix: relative `--target-dir` paths are now resolved from the caller's working directory (previously Cargo resolved them inside the staged workspace while the artifact lookup used the repo directory).
+
+Example dispatch:
+
+```sh
+gh workflow run build.yml \
+  -f mods="tests/fixtures/example_mod-0.1.0.hnmod" \
+  -f out="example_mod-0.1.0.hmmod" \
+  -f profile=fast
+```
+
+## Validation
+
+- `cargo fmt --all --check` passed.
+- `cargo clippy --all-targets -- -D warnings` passed.
+- `cargo test --all-targets` passed: 8 tests.
+- `actionlint .github/workflows/*.yml` passed.
+- Reproduced the workflow locally end-to-end: built `hmloader`, resolved the fixture, checked out Horizon `ba6344a…` and `horizon-mixins` `d9c83d7…`, converted with `--target-dir .agent-work/build/horizon-cargo`, then installed/verified/launch-dry-ran the resulting `.hmmod`. Artifact SHA-256: `2941ba8a88f683cc5f679829d2278d0cc4d99c9cd2046dc7cf960716af2ebcc0`. The compiled client still contains the mod's `[example_mod] Breaking block at` marker.
+- Negative resolver tests rejected mismatched Horizon pins, mismatched mixins pins and duplicate mod ids.
+- Logs are in `.agent-work/logs/build-workflow-local*.log` and `docs/VALIDATION.md` has the details.
+
+## Remaining limitations
+
+- The hosted runner is Linux x86-64, so the produced artifact targets `x86_64-unknown-linux-gnu`. Other OS/arch builds must run on a matching runner.
+- Private `.hnmod` URLs are not authenticated by the workflow.
+- The workflow has been validated locally and with `actionlint`; it has not yet been triggered through the GitHub Actions UI in this session.
+EOF
+)"
+https://github.com/promikailamin/horizon_modloader/issues/3#issuecomment-6903865071
+[0m
+[0m$ [0mgit status --short; git log --oneline -3
+M .agent-work/logs/opencode-output.log
+05dede8 Add dispatch workflow to build .hmmod packages
+7b7a78d chore: recover OpenCode workspace [skip ci]
+b14c17d Preserve issue #2 reply draft
+[0m
